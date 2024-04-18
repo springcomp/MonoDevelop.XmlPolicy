@@ -54,12 +54,15 @@ namespace MonoDevelop.Xml.Editor.Completion
 				if (el == null)
 					continue;
 				foreach (var att in el.Attributes) {
-					if (!string.IsNullOrEmpty (att.Value)) {
-						if (att.Name.HasPrefix) {
-							if (att.Name.Prefix == "xmlns" && att.Name.IsValid)
-								elementPath.Namespaces.AddPrefix (att.Value, att.Name.Name);
-						} else if (att.Name.Name == "xmlns") {
-							elementPath.Namespaces.AddPrefix (att.Value, "");
+					if (XAttributeValue.IsText(att.Value)) {
+						var value = att.Value!.As<string> ();
+						if (value != "") {
+							if (att.Name.HasPrefix) {
+								if (att.Name.Prefix == "xmlns" && att.Name.IsValid)
+									elementPath.Namespaces.AddPrefix (value, att.Name.Name);
+							} else if (att.Name.Name == "xmlns") {
+								elementPath.Namespaces.AddPrefix (value, "");
+							}
 						}
 					}
 				}
@@ -70,7 +73,7 @@ namespace MonoDevelop.Xml.Editor.Completion
 			}
 			return elementPath;
 		}
-		
+
 		/// <summary>
 		/// Gets the elements specifying the path.
 		/// </summary>
@@ -80,7 +83,7 @@ namespace MonoDevelop.Xml.Editor.Completion
 				return elements;
 			}
 		}
-		
+
 		/// <summary>
 		/// Compacts the path so it only contains the elements that are from 
 		/// the namespace of the last element in the path. 
@@ -88,22 +91,22 @@ namespace MonoDevelop.Xml.Editor.Completion
 		/// <remarks>This method is used when we need to know the path for a
 		/// particular namespace and do not care about the complete path.
 		/// </remarks>
-		public void Compact()
+		public void Compact ()
 		{
 			if (elements.Count > 0) {
 				QualifiedName lastName = Elements[Elements.Count - 1];
-				int index = FindNonMatchingParentElement(lastName.Namespace);
+				int index = FindNonMatchingParentElement (lastName.Namespace);
 				if (index != -1) {
-					RemoveParentElements(index);
+					RemoveParentElements (index);
 				}
 			}
 		}
-		
+
 		/// <summary>
 		/// An xml element path is considered to be equal if 
 		/// each path item has the same name and namespace.
 		/// </summary>
-		public override bool Equals(object? obj)
+		public override bool Equals (object? obj)
 		{
 			if (this == obj) {
 				return true;
@@ -114,15 +117,15 @@ namespace MonoDevelop.Xml.Editor.Completion
 			}
 
 			if (elements.Count == other.elements.Count) {
-				
+
 				for (int i = 0; i < elements.Count; ++i) {
-					if (!elements[i].Equals(other.elements[i])) {
+					if (!elements[i].Equals (other.elements[i])) {
 						return false;
 					}
 				}
 				return true;
 			}
-			
+
 			return false;
 		}
 
@@ -131,7 +134,7 @@ namespace MonoDevelop.Xml.Editor.Completion
 		/// <summary>
 		/// Removes elements up to and including the specified index.
 		/// </summary>
-		void RemoveParentElements(int index)
+		void RemoveParentElements (int index)
 		{
 			while (index >= 0) {
 				--index;
@@ -139,15 +142,15 @@ namespace MonoDevelop.Xml.Editor.Completion
 					elements.RemoveAt (0);
 			}
 		}
-		
+
 		/// <summary>
 		/// Finds the first parent that does belong in the specified
 		/// namespace.
 		/// </summary>
-		int FindNonMatchingParentElement(string namespaceUri)
+		int FindNonMatchingParentElement (string namespaceUri)
 		{
 			int index = -1;
-			
+
 			if (elements.Count > 1) {
 				// Start the check from the the last but one item.
 				for (int i = elements.Count - 2; i >= 0; --i) {

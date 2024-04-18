@@ -38,19 +38,24 @@ namespace MonoDevelop.Xml.Parser
 		const int UNQUOTED = 1;
 		const int SINGLEQUOTE = 2;
 		const int DOUBLEQUOTE = 3;
+		const int SINGLEQUOTE_VALUE = SINGLEQUOTE + valueMask;
+		const int DOUBLEQUOTE_VALUE = DOUBLEQUOTE + valueMask;
 
-		//derived classes should use these if they need to store info in the tag
-		protected const int TagMask = 3;
-		protected const int TagShift = 2;
+		private const int tagMask = 3;
+		private const int valueMask = 4;
 
 		public override XmlParserState? PushChar (char c, XmlParserContext context, ref bool replayCharacter, bool isEndOfFile)
 		{
-			System.Diagnostics.Debug.Assert (((XAttribute) context.Nodes.Peek ()).Value == null);
+			System.Diagnostics.Debug.Assert (
+				context.Nodes.Peek () switch {
+					XAttribute att => att.Value == null,
+					XAttributeValue attValue => attValue.IsNull,
+					_ => false,
+				});
 
 			if (c == '<') {
 				//the parent state should report the error
-				var att = (XAttribute)context.Nodes.Peek ();
-				att.Value = context.KeywordBuilder.ToString ();
+				End (context);
 				replayCharacter = true;
 				return Parent;
 			}
@@ -58,8 +63,7 @@ namespace MonoDevelop.Xml.Parser
 			if (isEndOfFile) {
 				//the parent state should report the error
 				context.Diagnostics?.Add (XmlCoreDiagnostics.IncompleteAttributeEof, context.PositionBeforeCurrentChar);
-				var att = (XAttribute)context.Nodes.Peek ();
-				att.Value = context.KeywordBuilder.ToString ();
+				End (context);
 				return Parent;
 			}
 
@@ -75,7 +79,17 @@ namespace MonoDevelop.Xml.Parser
 				context.StateTag = UNQUOTED;
 			}
 
-			int maskedTag = context.StateTag & TagMask;
+			switch (context.StateTag) {
+			case SINGLEQUOTE:
+			case DOUBLEQUOTE:
+				// starting a new attribute value
+				var attributeValue = new XAttributeValue (context.PositionBeforeCurrentChar);
+				context.Nodes.Push (attributeValue);
+				context.StateTag = context.StateTag + valueMask;
+				break;
+			}
+
+			int maskedTag = context.StateTag & tagMask;
 
 			if (maskedTag == UNQUOTED) {
 				return BuildUnquotedValue (c, context, ref replayCharacter);
@@ -83,8 +97,7 @@ namespace MonoDevelop.Xml.Parser
 
 			if ((c == '"' && maskedTag == DOUBLEQUOTE) || c == '\'' && maskedTag == SINGLEQUOTE) {
 				//ending the value
-				var att = (XAttribute) context.Nodes.Peek ();
-				att.Value = context.KeywordBuilder.ToString ();
+				EndAttributeValue (context);
 				return Parent;
 			}
 
@@ -112,7 +125,7 @@ namespace MonoDevelop.Xml.Parser
 			}
 
 			var att = (XAttribute)context.Nodes.Peek ();
-			att.Value = context.KeywordBuilder.ToString ();
+			att.Value = new XAttributeValue (context.KeywordBuilder.ToString ());
 
 			if (context.Diagnostics is not null && att.Name.IsValid) {
 				context.Diagnostics.Add (XmlCoreDiagnostics.UnquotedAttributeValue, new TextSpan (context.Position - att.Value.Length, att.Value.Length), att.Name.FullName);
@@ -127,11 +140,32 @@ namespace MonoDevelop.Xml.Parser
 
 		public static char? GetDelimiterChar (XmlParserContext context)
 			=> context.CurrentState is XmlAttributeValueState
-			? (context.StateTag & TagMask) switch {
+			? (context.StateTag & tagMask) switch {
 				SINGLEQUOTE => '\'',
 				DOUBLEQUOTE => '"',
-				_ => (char?) null
+				_ => (char?)null
 			}
 			: null;
+
+		private void End (XmlParserContext context)
+		{
+			var node = context.Nodes.Peek ();
+			if (node.GetType () == typeof (XAttributeValue))
+				EndAttributeValue (context);
+			if (node.GetType () == typeof (XAttribute))
+				EndAttribute (context);
+		}
+		private void EndAttribute (XmlParserContext context)
+		{
+			var att = (XAttribute)context.Nodes.Peek ();
+			att.Value = new XAttributeValue (context.KeywordBuilder.ToString ());
+		}
+		private void EndAttributeValue (XmlParserContext context)
+		{
+			var attributeValue = (XAttributeValue)context.Nodes.Pop ();
+			attributeValue.End (context.KeywordBuilder.ToString ());
+			var att = (XAttribute)context.Nodes.Peek ();
+			att.Value = attributeValue;
+		}
 	}
 }
