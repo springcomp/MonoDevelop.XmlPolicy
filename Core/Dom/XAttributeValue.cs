@@ -28,10 +28,6 @@ using System;
 
 namespace MonoDevelop.Xml.Dom
 {
-	public class XCSharpStatement
-	{
-	}
-
 	public class XAttributeValue : XNode
 	{
 		XCSharpStatement? statement_;
@@ -47,7 +43,13 @@ namespace MonoDevelop.Xml.Dom
 		public void End (string text)
 		{
 			text_ = text;
-			Span = new TextSpan(Span.Start, text_.Length);
+			Span = new TextSpan (Span.Start, text_.Length);
+		}
+
+		public void End (XCSharpStatement statement)
+		{
+			statement_ = statement;
+			Span = new TextSpan (Span.Start, statement_.Length + 2);
 		}
 
 		protected XAttributeValue () { }

@@ -26,7 +26,7 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 using System;
-
+using System.Net.Mime;
 using MonoDevelop.Xml.Analysis;
 using MonoDevelop.Xml.Dom;
 
@@ -38,33 +38,47 @@ namespace MonoDevelop.Xml.Parser
 		const int UNQUOTED = 1;
 		const int SINGLEQUOTE = 2;
 		const int DOUBLEQUOTE = 3;
-		const int SINGLEQUOTE_VALUE = SINGLEQUOTE + valueMask;
-		const int DOUBLEQUOTE_VALUE = DOUBLEQUOTE + valueMask;
+		const int SINGLEQUOTE_VALUE = SINGLEQUOTE + 4;
+		const int DOUBLEQUOTE_VALUE = DOUBLEQUOTE + 4;
+		const int AT = DOUBLEQUOTE_VALUE + 8;
 
 		private const int tagMask = 3;
 		private const int valueMask = 4;
+
+		private int currentStateLength_ = -1;
+		private int stateTag_ = -1;
+
+		public XmlAttributeValueState () : this (new XmlCSharpStatementState ()) { }
+
+		public XmlAttributeValueState (XmlCSharpStatementState csharpStatementState)
+		{
+			CSharpStatementState = Adopt (csharpStatementState);
+		}
+
+		protected XmlCSharpStatementState CSharpStatementState { get; }
 
 		public override XmlParserState? PushChar (char c, XmlParserContext context, ref bool replayCharacter, bool isEndOfFile)
 		{
 			System.Diagnostics.Debug.Assert (
 				context.Nodes.Peek () switch {
 					XAttribute att => att.Value == null,
-					XAttributeValue attValue => attValue.IsNull,
+					XAttributeValue attValue => attValue.IsNull || XAttributeValue.IsCSharpStatement (attValue),
+					XCSharpStatement attValue => true,
 					_ => false,
 				});
 
+			PopState (context);
+
 			if (c == '<') {
 				//the parent state should report the error
-				End (context);
 				replayCharacter = true;
-				return Parent;
+				return EndAndPop ();
 			}
 
 			if (isEndOfFile) {
 				//the parent state should report the error
 				context.Diagnostics?.Add (XmlCoreDiagnostics.IncompleteAttributeEof, context.PositionBeforeCurrentChar);
-				End (context);
-				return Parent;
+				return EndAndPop ();
 			}
 
 			if (context.CurrentStateLength == 0) {
@@ -83,9 +97,24 @@ namespace MonoDevelop.Xml.Parser
 			case SINGLEQUOTE:
 			case DOUBLEQUOTE:
 				// starting a new attribute value
-				var attributeValue = new XAttributeValue (context.PositionBeforeCurrentChar);
+				var position = (c == '@')
+					? context.PositionAfterCurrentChar
+					: context.PositionBeforeCurrentChar
+					;
+
+				var attributeValue = new XAttributeValue (position);
 				context.Nodes.Push (attributeValue);
-				context.StateTag = context.StateTag + valueMask;
+				context.StateTag += valueMask;
+				if (c == '@') {
+					context.StateTag = AT;
+					return null;
+				}
+				break;
+			case AT:
+				if (c == '(') {
+					PushState (context);
+					return CSharpStatementState;
+				}
 				break;
 			}
 
@@ -97,12 +126,22 @@ namespace MonoDevelop.Xml.Parser
 
 			if ((c == '"' && maskedTag == DOUBLEQUOTE) || c == '\'' && maskedTag == SINGLEQUOTE) {
 				//ending the value
-				EndAttributeValue (context);
-				return Parent;
+				return EndAndPop ();
 			}
 
 			context.KeywordBuilder.Append (c);
 			return null;
+
+			XmlParserState? EndAndPop ()
+			{
+				var type = context.Nodes.Peek ().GetType ();
+				if (type == typeof (XCSharpStatement))
+					EndCSharpStatement (context);
+				if (type == typeof (XAttributeValue))
+					EndAttributeValue (context);
+
+				return Parent;
+			}
 		}
 
 		public static bool IsUnquotedValueChar (char c) => char.IsLetterOrDigit (c) || c == '_' || c == '.' || c == '-';
@@ -147,25 +186,41 @@ namespace MonoDevelop.Xml.Parser
 			}
 			: null;
 
-		private void End (XmlParserContext context)
+		private void PushState (XmlParserContext context)
 		{
-			var node = context.Nodes.Peek ();
-			if (node.GetType () == typeof (XAttributeValue))
-				EndAttributeValue (context);
-			if (node.GetType () == typeof (XAttribute))
-				EndAttribute (context);
+			currentStateLength_ = context.CurrentStateLength;
+			stateTag_ = context.StateTag;
 		}
-		private void EndAttribute (XmlParserContext context)
+		private void PopState (XmlParserContext context)
 		{
-			var att = (XAttribute)context.Nodes.Peek ();
-			att.Value = new XAttributeValue (context.KeywordBuilder.ToString ());
+			if (currentStateLength_ != -1) {
+				context.StateTag = stateTag_;
+				context.CurrentStateLength = currentStateLength_;
+
+				stateTag_ = -1;
+				currentStateLength_ = -1;
+			}
 		}
+
 		private void EndAttributeValue (XmlParserContext context)
 		{
 			var attributeValue = (XAttributeValue)context.Nodes.Pop ();
-			attributeValue.End (context.KeywordBuilder.ToString ());
-			var att = (XAttribute)context.Nodes.Peek ();
-			att.Value = attributeValue;
+			if (context.PreviousState == Parent) {
+				var text = context.StateTag == AT
+					? "@"
+					: context.KeywordBuilder.ToString ()
+					;
+
+				attributeValue.End (text);
+			}
+			((XAttribute)context.Nodes.Peek ()).Value = attributeValue;
+		}
+		private void EndCSharpStatement (XmlParserContext context)
+		{
+			var statement = (XCSharpStatement)context.Nodes.Pop ();
+			var attributeValue = (XAttributeValue)context.Nodes.Pop ();
+			attributeValue.End (statement);
+			((XAttribute)context.Nodes.Peek ()).Value = attributeValue;
 		}
 	}
 }
