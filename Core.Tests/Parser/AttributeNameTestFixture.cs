@@ -87,7 +87,10 @@ namespace MonoDevelop.Xml.Tests.Parser
 
 		static void AssertAttributeName (string doc, string? name)
 		{
-			TestXmlParser.Parse (doc, p => p.AssertNodeIs<XAttribute> ().AssertName (name));
+			TestXmlParser.Parse (doc, p => {
+				p.AssertNodeIf<XAttributeValue> ((p, _) => p.AssertNodeIf<XAttribute>((p, node) => node.AssertName(name), 1));
+				p.AssertNodeIf<XAttribute> ((_, node) => node.AssertName (name));
+			});
 		}
 
 		static void NotAttribute (string doc)

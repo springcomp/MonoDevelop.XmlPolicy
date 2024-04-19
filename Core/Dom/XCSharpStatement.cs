@@ -1,10 +1,8 @@
 //
-// XCData.cs
+// XAttributeValue.cs
 //
 // Author:
-//   Mikayla Hutchinson <m.j.hutchinson@gmail.com>
-//
-// Copyright (C) 2008 Novell, Inc (http://www.novell.com)
+//   springcomp <springcomp@users.noreply.github.com>
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -26,20 +24,26 @@
 
 #nullable enable
 
+using System;
+
 namespace MonoDevelop.Xml.Dom
 {
-	public class XCData : XNode
+	public class XCSharpStatement : XNode
 	{
-		public XCData (int startOffset) : base (startOffset) {}
-		public XCData (TextSpan span) : base (span) {}
+		private string? text_;
+		public XCSharpStatement (int startOffset) : base (startOffset) { }
+		protected XCSharpStatement () { }
+		protected override XObject NewInstance () => new XCSharpStatement ();
 
-		protected XCData () {}
-		protected override XObject NewInstance () { return new XCData (); }
-
-		public string? InnerText { get; internal set; }
-
-		public override string FriendlyPathRepresentation {
-			get { return "<![CDATA[ ]]>"; }
+		public string? RawText {
+			get => text_;
+			internal set => text_ = value;
 		}
+
+		public int Length => text_ != null ? text_.Length : 0;
+
+		public override string ToString () => $"[XCSharpStatement Location='{Span}' Value='{GetValueRepresentation ()}']";
+
+		private string GetValueRepresentation () => text_! ?? "";
 	}
 }

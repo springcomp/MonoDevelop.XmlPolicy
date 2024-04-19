@@ -72,8 +72,7 @@ namespace MonoDevelop.Xml.Parser
 						return Parent;
 					}
 					context.StateTag = GETTINGEQ;
-				}
-				else if (context.PreviousState is XmlAttributeValueState) {
+				} else if (context.PreviousState is XmlAttributeValueState) {
 					if (att is null) {
 						InvalidParserStateException.ThrowExpected<XAttribute> (context);
 					}

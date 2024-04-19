@@ -194,6 +194,13 @@ namespace MonoDevelop.Xml.Tests.Parser
 		public static T AssertNodeIs<T> (this XmlParser parser, int down = 0) where T : class
 			=> parser.AssertPeek(down).AssertCast<T> ();
 
+		public static void AssertNodeIf<T>(this XmlParser parser, Action<XmlParser, T> assert, int down = 0) where T : class
+		{
+			var node = parser.AssertPeek (down);
+			if (typeof (T).IsAssignableFrom (node.GetType ()))
+				assert (parser, (T)(object)node!);
+		}
+
 		public static void AssertNoDiagnostics (this (XDocument doc, IReadOnlyList<XmlDiagnostic>? diagnostics) parseResult, Func<XmlDiagnostic, bool>? filter = null) => AssertDiagnosticCount (parseResult.diagnostics, 0, filter);
 
 		public static void AssertDiagnosticCount (this (XDocument doc, IReadOnlyList<XmlDiagnostic>? diagnostics) parseResult, int count, Func<XmlDiagnostic, bool>? filter = null)
@@ -288,7 +295,7 @@ namespace MonoDevelop.Xml.Tests.Parser
 			foreach (XAttribute att in obj.Attributes) {
 				Assert.IsTrue (i < nameValuePairs.Length);
 				Assert.AreEqual (nameValuePairs[i], att.Name.FullName);
-				Assert.AreEqual (nameValuePairs[i + 1], att.Value);
+				Assert.AreEqual (nameValuePairs[i + 1], att.Value?.As<string> ());
 				i += 2;
 			}
 			Assert.AreEqual (nameValuePairs.Length, i);

@@ -93,7 +93,7 @@ namespace MonoDevelop.Xml.Dom
 			return null;
 		}
 
-		public string? GetValue (XName name, bool ignoreCase) => Get (name, ignoreCase)?.Value;
+		public XAttributeValue? GetValue (XName name, bool ignoreCase) => Get (name, ignoreCase)?.Value;
 
 		public void AddAttribute (XAttribute newChild)
 		{
