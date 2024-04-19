@@ -5,6 +5,20 @@ namespace MonoDevelop.Xml.Analysis
 {
 	class XmlCoreDiagnostics
 	{
+		public static XmlDiagnosticDescriptor EmptyCSharpStatementValue = new (
+			nameof (EmptyCSharpStatementValue),
+			"Empty C# statement",
+			"C# statement is invalid.",
+			XmlDiagnosticSeverity.Error
+		);
+
+		public static XmlDiagnosticDescriptor IncompleteCSharpStatementEof = new (
+			nameof (IncompleteCSharpStatementEof),
+			"Incomplete C# statement",
+			"C# statement is incomplete due to unexpected end of file.",
+			XmlDiagnosticSeverity.Error
+		);
+
 		public static XmlDiagnosticDescriptor IncompleteAttributeValue = new (
 			nameof (IncompleteAttributeValue),
 			"Incomplete attribute value",

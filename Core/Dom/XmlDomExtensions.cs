@@ -22,11 +22,11 @@ namespace MonoDevelop.Xml.Dom
 			return !obj.Name.HasPrefix && string.Equals (obj.Name.Name, name, comparison);
 		}
 
-		public static bool IsTrue (this XAttributeCollection attributes, string name)
-		{
-			var att = attributes.Get (name, true);
-			return att != null && string.Equals (att.Value, "true", StringComparison.OrdinalIgnoreCase);
-		}
+		//public static bool IsTrue (this XAttributeCollection attributes, string name)
+		//{
+		//	var att = attributes.Get (name, true);
+		//	return att != null && string.Equals (att.Value, "true", StringComparison.OrdinalIgnoreCase);
+		//}
 
 		static XAttribute? FindAttribute (this IAttributedXObject attContainer, int offset)
 		{
@@ -114,16 +114,16 @@ namespace MonoDevelop.Xml.Dom
 			? null
 			: TextSpan.FromBounds (obj.Attributes.First.Span.Start, obj.Attributes.Last.Span.End);
 
-		public static Dictionary<string, string> ToDictionary (this XAttributeCollection attributes, StringComparer comparer)
-		{
-			var dict = new Dictionary<string, string> (comparer);
-			foreach (XAttribute a in attributes) {
-				if (a.Name.IsValid) {
-					dict[a.Name.FullName] = a.Value ?? string.Empty;
-				}
-			}
-			return dict;
-		}
+		//public static Dictionary<string, string> ToDictionary (this XAttributeCollection attributes, StringComparer comparer)
+		//{
+		//	var dict = new Dictionary<string, string> (comparer);
+		//	foreach (XAttribute a in attributes) {
+		//		if (a.Name.IsValid) {
+		//			dict[a.Name.FullName] = a.Value ?? string.Empty;
+		//		}
+		//	}
+		//	return dict;
+		//}
 
 		public static XNode? FindPreviousNode (this XNode node) => node.FindPreviousSibling () ?? node.Parent as XNode;
 

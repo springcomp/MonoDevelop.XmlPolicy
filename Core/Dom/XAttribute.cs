@@ -31,7 +31,7 @@ namespace MonoDevelop.Xml.Dom
 	public class XAttribute : XObject, INamedXObject
 	{
 
-		public XAttribute (int startOffset, XName name, string value) : base (startOffset)
+		public XAttribute (int startOffset, XName name, XAttributeValue value) : base (startOffset)
 		{
 			Name = name;
 			Value = value;
@@ -45,7 +45,7 @@ namespace MonoDevelop.Xml.Dom
 
 		public bool IsNamed => Name.IsValid;
 
-		public string? Value { get; set; }
+		public XAttributeValue? Value { get; set; }
 
 		public XAttribute? NextSibling { get; internal protected set; }
 
