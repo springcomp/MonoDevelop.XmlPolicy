@@ -1,7 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net48;net8.0</TargetFrameworks>
+    <TargetFrameworks>net48;net8.0;net10.0</TargetFrameworks>
+    <RuntimeIdentifiers>win-x64;linux-x64;osx-x64;osx-arm64</RuntimeIdentifiers>
     <!--
     The assembly is called MonoDevelop.Xml.Core so as not to conflict with the original extension assembly in MonoDevelop
     but the root namespace is still MonoDevelop.Xml
@@ -12,6 +13,7 @@
   <PropertyGroup>
     <Nullable>enable</Nullable>
     <Nullable Condition="$(TargetFramework)=='net48'">annotations</Nullable>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
   </PropertyGroup>
 
   <ItemGroup>
