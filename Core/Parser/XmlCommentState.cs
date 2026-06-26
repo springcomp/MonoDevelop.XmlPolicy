@@ -38,7 +38,7 @@ namespace MonoDevelop.Xml.Parser
 		const int NOMATCH = 0;
 		const int SINGLE_DASH = 1;
 		const int DOUBLE_DASH = 2;
-		
+
 		public override XmlParserState? PushChar (char c, XmlParserContext context, ref bool replayCharacter, bool isEndOfFile)
 		{
 			if (context.CurrentStateLength == 0) {
@@ -56,7 +56,7 @@ namespace MonoDevelop.Xml.Parser
 					context.StateTag = SINGLE_DASH;
 				else
 					context.StateTag = DOUBLE_DASH;
-				
+
 			} else if (context.StateTag == DOUBLE_DASH) {
 				if (c == '>') {
 					// if the '--' is followed by a '>', the state has ended
@@ -74,15 +74,15 @@ namespace MonoDevelop.Xml.Parser
 				context.StateTag = NOMATCH;
 				context.KeywordBuilder.Append (c);
 			}
-			
+
 			return null;
 
 			XmlParserState? EndAndPop ()
 			{
 				var comment = (XComment)context.Nodes.Pop ();
-				comment.End (context.KeywordBuilder.ToString());
+				comment.End (context.KeywordBuilder.ToString ());
 				if (context.BuildTree) {
-					((XContainer)context.Nodes.Peek ()).AddChildNode (comment);
+					((XContainer)context.Nodes.Peek ()).AddChildNodeFromParser (comment);
 				}
 				return Parent;
 			}
@@ -104,7 +104,7 @@ namespace MonoDevelop.Xml.Parser
 					previousState: Parent,
 					currentStateLength: length,
 					keywordBuilder: new System.Text.StringBuilder (),
-					stateTag: position == comment.Span.End - 3 ? SINGLE_DASH : (position == comment.Span.End - 2 ? DOUBLE_DASH: NOMATCH),
+					stateTag: position == comment.Span.End - 3 ? SINGLE_DASH : (position == comment.Span.End - 2 ? DOUBLE_DASH : NOMATCH),
 					nodes: parents
 				);
 			}

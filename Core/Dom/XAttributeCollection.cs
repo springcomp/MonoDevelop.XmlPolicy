@@ -41,14 +41,14 @@ namespace MonoDevelop.Xml.Dom
 
 		public int Count { get; private set; }
 
-		[MemberNotNullWhen(false, nameof (First), nameof (Last))]
+		[MemberNotNullWhen (false, nameof (First), nameof (Last))]
 		public bool IsEmpty => First == null;
 
 		public XAttributeCollection (XObject parent) => this.parent = parent;
 
 		public Dictionary<XName, XAttribute> ToDictionary ()
 		{
-			var dict = new Dictionary<XName,XAttribute> ();
+			var dict = new Dictionary<XName, XAttribute> ();
 			XAttribute? current = First;
 			while (current is not null) {
 				dict.Add (current.Name, current);
@@ -57,7 +57,7 @@ namespace MonoDevelop.Xml.Dom
 			return dict;
 		}
 
-		public XAttribute? this [XName name] {
+		public XAttribute? this[XName name] {
 			get {
 				XAttribute? current = First;
 				while (current is not null) {
@@ -69,7 +69,7 @@ namespace MonoDevelop.Xml.Dom
 			}
 		}
 
-		public XAttribute? this [int index] {
+		public XAttribute? this[int index] {
 			get {
 				XAttribute? current = First;
 				while (current is not null) {
@@ -95,15 +95,99 @@ namespace MonoDevelop.Xml.Dom
 
 		public string? GetValue (XName name, bool ignoreCase) => Get (name, ignoreCase)?.Value;
 
-		public void AddAttribute (XAttribute newChild)
+		/// <summary>
+		/// Parser-internal entry point: links the attribute WITHOUT applying the span contract.
+		/// </summary>
+		internal void AddAttributeFromParser (XAttribute newChild)
 		{
 			newChild.Parent = parent;
+			newChild.NextSibling = null;
 			if (Last is not null) {
 				Last.NextSibling = newChild;
 			}
 			First ??= newChild;
 			Last = newChild;
 			Count++;
+		}
+
+		/// <summary>
+		/// Adds <paramref name="newChild"/> to the collection and applies the span invalidation
+		/// contract (self + following attributes + owning element + ancestors). Use this for
+		/// post-parse mutations.
+		/// </summary>
+		public void AddAttribute (XAttribute newChild)
+		{
+			// Auto-detach from previous parent (single-parent rule).
+			if (newChild.Parent is IAttributedXObject oldParent && oldParent.Attributes is XAttributeCollection oldColl && oldColl != this)
+				oldColl.RemoveAttribute (newChild);
+
+			AddAttributeFromParser (newChild);
+			// Apply span contract: invalidate the new attribute (self) and ancestors.
+			newChild.InvalidateSpanChain ();
+		}
+
+		public bool Contains (XAttribute attribute)
+		{
+			XAttribute? current = First;
+			while (current is not null) {
+				if (current == attribute)
+					return true;
+				current = current.NextSibling;
+			}
+			return false;
+		}
+
+		public void RemoveAttribute (XAttribute child)
+		{
+			// Find the previous sibling or start of the list
+			XAttribute? current = First;
+			XAttribute? previous = null;
+
+			while (current is not null) {
+				if (current == child) {
+					// Apply span contract BEFORE unlinking: invalidate child, following attributes, and ancestors.
+					child.InvalidateSpanChain ();
+
+					// Found the attribute to remove
+					if (previous is not null) {
+						// Not the first element
+						previous.NextSibling = current.NextSibling;
+					} else {
+						// Removing the first element
+						First = current.NextSibling;
+					}
+
+					// Update Last if we're removing the last element
+					if (current == Last) {
+						Last = previous;
+					}
+
+					current.Parent = null;
+					current.NextSibling = null;
+					Count--;
+					return;
+				}
+
+				previous = current;
+				current = current.NextSibling;
+			}
+		}
+
+		public void Clear ()
+		{
+			while (First is XAttribute attribute)
+				RemoveAttribute (attribute);
+		}
+
+		public void ReplaceAllAttributes (IEnumerable<XAttribute> newAttributes)
+		{
+			if (newAttributes is null)
+				throw new ArgumentNullException (nameof (newAttributes));
+
+			var replacements = new List<XAttribute> (newAttributes);
+			Clear ();
+			foreach (var attribute in replacements)
+				AddAttribute (attribute);
 		}
 
 		public IEnumerator<XAttribute> GetEnumerator ()

@@ -44,7 +44,7 @@ namespace MonoDevelop.Xml.Parser
 		}
 
 		internal XmlTreeParser (XmlSpineParser fromSpine)
-			: base (fromSpine.GetContext ().ShallowCopy(), fromSpine.RootState)
+			: base (fromSpine.GetContext ().ShallowCopy (), fromSpine.RootState)
 		{
 			Context.BuildTree = true;
 			Context.ConnectNodes ();

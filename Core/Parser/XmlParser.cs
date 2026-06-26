@@ -112,9 +112,9 @@ namespace MonoDevelop.Xml.Parser
 			}
 			throw new InvalidOperationException ($"Too many state changes for char '{c}'. Current state is {Context.CurrentState}.");
 
-			done:
-				Context.Position++;
-				return;
+		done:
+			Context.Position++;
+			return;
 		}
 
 		/// <summary>

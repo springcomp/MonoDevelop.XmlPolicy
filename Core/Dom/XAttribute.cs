@@ -41,6 +41,25 @@ namespace MonoDevelop.Xml.Dom
 
 		public XAttribute (int startOffset) : base (startOffset) { }
 
+		/// <summary>
+		/// Creates a new attribute with the given name and no source offset.
+		/// <see cref="XObject.Span"/> is set to <see cref="TextSpan.Invalid"/>.
+		/// </summary>
+		public XAttribute (XName name) : base (TextSpan.Invalid)
+		{
+			Name = name;
+		}
+
+		/// <summary>
+		/// Creates a new attribute with the given name and value and no source offset.
+		/// <see cref="XObject.Span"/> is set to <see cref="TextSpan.Invalid"/>.
+		/// </summary>
+		public XAttribute (XName name, string value) : base (TextSpan.Invalid)
+		{
+			Name = name;
+			Value = value;
+		}
+
 		public XName Name { get; set; }
 
 		[MemberNotNullWhen (true, nameof (Value), nameof (ValueOffset), nameof (ValueSpan))]
@@ -52,22 +71,83 @@ namespace MonoDevelop.Xml.Dom
 
 		public int? ValueOffset { get; private set; }
 
-		[MemberNotNull(nameof(Value), nameof(ValueOffset))]
+		[MemberNotNull (nameof (Value), nameof (ValueOffset))]
 		internal void SetValue (int offset, string value)
 		{
 			ValueOffset = offset;
 			Value = value;
 		}
 
+		/// <summary>
+		/// Applies the span invalidation contract: marks this attribute, all following attribute siblings,
+		/// and all ancestor nodes up to the root as <see cref="TextSpan.Invalid"/>.
+		/// Also sets the owning <see cref="XDocument.IsDirty"/> flag when the root is a document.
+		/// </summary>
+		internal void InvalidateSpanChain ()
+		{
+			InvalidateSpan ();
+			var sib = NextSibling;
+			while (sib is not null) {
+				sib.InvalidateSpan ();
+				sib = sib.NextSibling;
+			}
+			var ancestor = Parent;
+			while (ancestor is not null) {
+				ancestor.InvalidateSpan ();
+				if (ancestor is XDocument doc)
+					doc.IsDirty = true;
+				ancestor = ancestor.Parent;
+			}
+		}
+
+		/// <summary>
+		/// Sets the attribute value and invalidates the spans of this attribute, its following siblings,
+		/// and all ancestor nodes per the span contract.
+		/// </summary>
+		public void SetValue (string value)
+		{
+			Value = value;
+			ValueOffset = null;
+			InvalidateSpanChain ();
+		}
+
 		public XAttribute? NextSibling { get; internal protected set; }
 
-		protected XAttribute () {}
+		/// <summary>
+		/// Gets the previous sibling attribute, or <see langword="null"/> if this is the first attribute.
+		/// Computed by walking the parent element's attribute list.
+		/// </summary>
+		public XAttribute? PreviousSibling {
+			get {
+				if (Parent is IAttributedXObject p && p.Attributes is XAttributeCollection atts) {
+					var a = atts.First;
+					while (a != null) {
+						if (a.NextSibling == this)
+							return a;
+						a = a.NextSibling;
+					}
+				}
+				return null;
+			}
+		}
+
+		protected XAttribute () { }
 		protected override XObject NewInstance () { return new XAttribute (); }
+
+		internal XAttribute CloneCore ()
+		{
+			var clone = (XAttribute)ShallowCopy ();
+			clone.Parent = null;
+			clone.NextSibling = null;
+			clone.SetSpan (TextSpan.Invalid);
+			clone.ValueOffset = null;
+			return clone;
+		}
 
 		protected override void ShallowCopyFrom (XObject copyFrom)
 		{
 			base.ShallowCopyFrom (copyFrom);
-			var copyFromAtt = (XAttribute) copyFrom;
+			var copyFromAtt = (XAttribute)copyFrom;
 			//immutable types
 			Name = copyFromAtt.Name;
 			Value = copyFromAtt.Value;
@@ -80,7 +160,7 @@ namespace MonoDevelop.Xml.Dom
 
 		public TextSpan NameSpan => new (Span.Start, Name.Length);
 
-		public TextSpan? ValueSpan => HasValue? new (ValueOffset.Value, Value.Length) : null;
+		public TextSpan? ValueSpan => HasValue ? new (ValueOffset.Value, Value.Length) : null;
 
 		// value nullability helpers
 

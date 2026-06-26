@@ -45,7 +45,7 @@ namespace MonoDevelop.Xml.Parser
 
 		public override XmlParserState? PushChar (char c, XmlParserContext context, ref bool replayCharacter, bool isEndOfFile)
 		{
-			System.Diagnostics.Debug.Assert (((XAttribute) context.Nodes.Peek ()).Value == null);
+			System.Diagnostics.Debug.Assert (((XAttribute)context.Nodes.Peek ()).Value == null);
 
 			if (c == '<') {
 				//the parent state should report the error
@@ -83,7 +83,7 @@ namespace MonoDevelop.Xml.Parser
 
 			if ((c == '"' && maskedTag == DOUBLEQUOTE) || c == '\'' && maskedTag == SINGLEQUOTE) {
 				//ending the value
-				var att = (XAttribute) context.Nodes.Peek ();
+				var att = (XAttribute)context.Nodes.Peek ();
 				att.SetValue (context.Position - context.KeywordBuilder.Length, context.KeywordBuilder.ToString ());
 				return Parent;
 			}
@@ -130,7 +130,7 @@ namespace MonoDevelop.Xml.Parser
 			? (context.StateTag & TagMask) switch {
 				SINGLEQUOTE => '\'',
 				DOUBLEQUOTE => '"',
-				_ => (char?) null
+				_ => (char?)null
 			}
 			: null;
 	}

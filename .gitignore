@@ -2,6 +2,8 @@
 *~
 
 # build
+.agentic/
+
 [Oo]bj/
 [Bb]in/
 packages/

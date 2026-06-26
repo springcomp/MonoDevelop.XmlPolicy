@@ -25,22 +25,22 @@
 // THE SOFTWARE.
 
 using System;
-using System.Text;
 using System.ComponentModel;
 using System.Globalization;
+using System.Text;
 
 namespace MonoDevelop.Xml.Formatting
 {
 	class CStringsConverter : TypeConverter
 	{
 		public override bool CanConvertFrom (ITypeDescriptorContext? context, Type? sourceType) => sourceType == typeof (string);
-	
+
 		public override bool CanConvertTo (ITypeDescriptorContext? context, Type? destinationType) => destinationType == typeof (string);
-	
-		public override object? ConvertFrom (ITypeDescriptorContext? context, CultureInfo? culture, object? value) => value is null? null : UnescapeString ((string)value);
-	
+
+		public override object? ConvertFrom (ITypeDescriptorContext? context, CultureInfo? culture, object? value) => value is null ? null : UnescapeString ((string)value);
+
 		public override object? ConvertTo (ITypeDescriptorContext? context, CultureInfo? culture, object? value, Type destinationType) => value is null ? null : EscapeString ((string)value);
-	
+
 		public static string EscapeString (string text)
 		{
 			var sb = new StringBuilder ();
@@ -48,25 +48,25 @@ namespace MonoDevelop.Xml.Formatting
 				char c = text[i];
 				string txt;
 				switch (c) {
-					case '"': txt = "\\\""; break;
-					case '\0': txt = @"\0"; break;
-					case '\\': txt = @"\\"; break;
-					case '\a': txt = @"\a"; break;
-					case '\b': txt = @"\b"; break;
-					case '\f': txt = @"\f"; break;
-					case '\v': txt = @"\v"; break;
-					case '\n': txt = @"\n"; break;
-					case '\r': txt = @"\r"; break;
-					case '\t': txt = @"\t"; break;
-					default:
-						sb.Append (c);
-						continue;
+				case '"': txt = "\\\""; break;
+				case '\0': txt = @"\0"; break;
+				case '\\': txt = @"\\"; break;
+				case '\a': txt = @"\a"; break;
+				case '\b': txt = @"\b"; break;
+				case '\f': txt = @"\f"; break;
+				case '\v': txt = @"\v"; break;
+				case '\n': txt = @"\n"; break;
+				case '\r': txt = @"\r"; break;
+				case '\t': txt = @"\t"; break;
+				default:
+					sb.Append (c);
+					continue;
 				}
 				sb.Append (txt);
 			}
 			return sb.ToString ();
 		}
-		
+
 		public static string UnescapeString (string text)
 		{
 			var sb = new StringBuilder ();
@@ -75,20 +75,20 @@ namespace MonoDevelop.Xml.Formatting
 				if (c == '\\') {
 					if (++i >= text.Length)
 						break;
-					c = text [i];
+					c = text[i];
 					char txt;
 					switch (c) {
-						case '"': txt = '"'; break;
-						case '0': txt = '\0'; break;
-						case '\\': txt = '\\'; break;
-						case 'a': txt = '\a'; break;
-						case 'b': txt = '\b'; break;
-						case 'f': txt = '\f'; break;
-						case 'v': txt = '\v'; break;
-						case 'n': txt = '\n'; break;
-						case 'r': txt = '\r'; break;
-						case 't': txt = '\t'; break;
-						default: txt = c; break;
+					case '"': txt = '"'; break;
+					case '0': txt = '\0'; break;
+					case '\\': txt = '\\'; break;
+					case 'a': txt = '\a'; break;
+					case 'b': txt = '\b'; break;
+					case 'f': txt = '\f'; break;
+					case 'v': txt = '\v'; break;
+					case 'n': txt = '\n'; break;
+					case 'r': txt = '\r'; break;
+					case 't': txt = '\t'; break;
+					default: txt = c; break;
 					}
 					sb.Append (txt);
 				} else

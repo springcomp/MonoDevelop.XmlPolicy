@@ -61,12 +61,12 @@ partial class XmlFormatterWriter
 		{
 			InBlock = true;
 		}
-		
+
 		public void MarkBlockEnd ()
 		{
 			InBlock = false;
 		}
-		
+
 		public void WriteBlock (bool wrappedLine)
 		{
 			if (wrappedLine)
@@ -75,23 +75,22 @@ partial class XmlFormatterWriter
 				Wrapped.Write (sb.ToString ());
 			sb.Length = 0;
 		}
-		
+
 		public bool InBlock { get; private set; }
-		
+
 		public override Encoding Encoding => Wrapped.Encoding;
-		
+
 		public override void Write (char c)
 		{
 			if (InBlock)
 				sb.Append (c);
 			else
 				Wrapped.Write (c);
-			
+
 			if (c == '\n') {
 				AttributesPerLine = 0;
 				Column = 0;
-			}
-			else {
+			} else {
 				if (c == '\t')
 					Column += formatter.textPolicy.TabWidth;
 				else

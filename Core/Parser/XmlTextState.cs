@@ -28,7 +28,7 @@ namespace MonoDevelop.Xml.Parser
 			}
 
 			context.KeywordBuilder.Append (c);
-			
+
 			return null;
 
 			void EndAndPop ()
@@ -41,7 +41,7 @@ namespace MonoDevelop.Xml.Parser
 				node.End (context.KeywordBuilder.ToString ());
 
 				if (context.BuildTree) {
-					((XContainer)context.Nodes.Peek ()).AddChildNode (node);
+					((XContainer)context.Nodes.Peek ()).AddChildNodeFromParser (node);
 				}
 			}
 		}

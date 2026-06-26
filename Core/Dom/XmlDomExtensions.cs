@@ -13,7 +13,9 @@ namespace MonoDevelop.Xml.Dom
 	{
 		public static TextSpan GetSquiggleSpan (this XNode node)
 		{
-			return node is XElement el ? el.NameSpan : node.NextSibling?.Span ?? node.Span;
+			if (node is XElement el)
+				return el.Span.IsValid ? el.NameSpan : TextSpan.Invalid;
+			return node.NextSibling?.Span ?? node.Span;
 		}
 
 		public static bool IsTrue (this XAttributeCollection attributes, string name)
@@ -104,9 +106,15 @@ namespace MonoDevelop.Xml.Dom
 		}
 
 		public static TextSpan? GetAttributesSpan (this IAttributedXObject obj)
-			=> obj.Attributes.IsEmpty
-			? null
-			: TextSpan.FromBounds (obj.Attributes.First.Span.Start, obj.Attributes.Last.Span.End);
+		{
+			if (obj.Attributes.IsEmpty)
+				return null;
+			var first = obj.Attributes.First;
+			var last = obj.Attributes.Last;
+			if (!first.Span.IsValid || !last.Span.IsValid)
+				return TextSpan.Invalid;
+			return TextSpan.FromBounds (first.Span.Start, last.Span.End);
+		}
 
 		public static Dictionary<string, string> ToDictionary (this XAttributeCollection attributes, StringComparer comparer)
 		{
@@ -121,19 +129,7 @@ namespace MonoDevelop.Xml.Dom
 
 		public static XNode? FindPreviousNode (this XNode node) => node.FindPreviousSibling () ?? node.Parent as XNode;
 
-		public static XNode? FindPreviousSibling (this XNode node)
-		{
-			if (node.Parent is XContainer container) {
-				var n = container.FirstChild;
-				while (n != null) {
-					if (n.NextSibling == node) {
-						return n;
-					}
-					n = n.NextSibling;
-				}
-			}
-			return null;
-		}
+		public static XNode? FindPreviousSibling (this XNode node) => node.PreviousSibling;
 
 		public static XElement? GetPreviousSiblingElement (this XElement element)
 		{
@@ -153,19 +149,7 @@ namespace MonoDevelop.Xml.Dom
 			return null;
 		}
 
-		public static XAttribute? FindPreviousSibling (this XAttribute att)
-		{
-			if (att.Parent is IAttributedXObject p && p.Attributes is XAttributeCollection atts) {
-				var a = atts.First;
-				while (a != null) {
-					if (a.NextSibling == att) {
-						return a;
-					}
-					a = a.NextSibling;
-				}
-			}
-			return null;
-		}
+		public static XAttribute? FindPreviousSibling (this XAttribute att) => att.PreviousSibling;
 
 		/// <summary>
 		/// Get the nodes from the document that intersect a particular range.

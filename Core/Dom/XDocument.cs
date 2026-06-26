@@ -37,16 +37,26 @@ namespace MonoDevelop.Xml.Dom
 		public XDocument () : base (0) { }
 		protected override XObject NewInstance () { return new XDocument (); }
 
+		/// <summary>
+		/// Indicates that one or more structural or content mutations have been applied to this
+		/// document since it was last parsed or since <see cref="MonoDevelop.Xml.Dom.XmlDomWriter.RecalculateSpans"/>
+		/// was last called. When <see langword="true"/>, node spans may be <see cref="TextSpan.Invalid"/>.
+		/// </summary>
+		public bool IsDirty { get; internal set; }
+
 		public override string FriendlyPathRepresentation {
 			get { throw new InvalidOperationException ("Should not display document in path bar."); }
 		}
 
-		public override void AddChildNode (XNode newChild)
+		public override void AddChildNodeFromParser (XNode newChild)
 		{
-			if (RootElement == null && newChild is XElement)
-				RootElement = (XElement)newChild;
-			base.AddChildNode (newChild);
+			if (RootElement == null && newChild is XElement el)
+				RootElement = el;
+			base.AddChildNodeFromParser (newChild);
 		}
+
+		// XDocument.AddChildNode is no longer overridden: base.AddChildNode calls
+		// AddChildNodeFromParser (which tracks RootElement) then InvalidateSpanChain.
 
 		// normally IsEnded checks whether the span is non-zero
 		// but XDocument is the only node type that can have a zero-length span

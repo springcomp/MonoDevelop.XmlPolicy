@@ -54,12 +54,12 @@ namespace MonoDevelop.Xml.Parser
 		/// </returns>
 		public abstract XmlParserState? PushChar (char c, XmlParserContext context, ref bool replayCharacter, bool isEndOfFile);
 
-		public XmlParserState? Parent { get; private set;  }
+		public XmlParserState? Parent { get; private set; }
 
 		protected TChild Adopt<TChild> (TChild child) where TChild : XmlParserState
 		{
 			if (child.Parent != null) {
-				throw new ArgumentException ("Child already has a Parent", nameof(child));
+				throw new ArgumentException ("Child already has a Parent", nameof (child));
 			}
 			child.Parent = this;
 			return child;
@@ -74,10 +74,10 @@ namespace MonoDevelop.Xml.Parser
 			string? result = null;
 
 			if (Parent is XmlParserState parent) {
-				result = parent.ToString() + ".";
+				result = parent.ToString () + ".";
 			}
 
-			result += GetType().Name
+			result += GetType ().Name
 				.Replace ("Xml", "")
 				.Replace ("State", "");
 
@@ -121,7 +121,7 @@ namespace MonoDevelop.Xml.Parser
 		internal static void ThrowExpected<T> (XmlParserContext context) where T : XObject
 		{
 			XObject actual = context.Nodes.Peek ();
-			throw new InvalidParserStateException ($"Expected {typeof(T)} on stack, got {actual.GetType ()}");
+			throw new InvalidParserStateException ($"Expected {typeof (T)} on stack, got {actual.GetType ()}");
 		}
 	}
 }

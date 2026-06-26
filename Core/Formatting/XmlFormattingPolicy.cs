@@ -33,7 +33,7 @@ namespace MonoDevelop.Xml.Formatting
 	{
 		List<XmlFormattingSettings> formats = new List<XmlFormattingSettings> ();
 		XmlFormattingSettings defaultFormat = new XmlFormattingSettings ();
-		
+
 		public XmlFormattingPolicy ()
 		{
 		}
@@ -45,7 +45,7 @@ namespace MonoDevelop.Xml.Formatting
 		public XmlFormattingSettings DefaultFormat {
 			get { return defaultFormat; }
 		}
-		
+
 		public bool Equals (XmlFormattingPolicy? other)
 		{
 			if (other is null) {
@@ -53,15 +53,15 @@ namespace MonoDevelop.Xml.Formatting
 			}
 			if (!defaultFormat.Equals (other.defaultFormat))
 				return false;
-			
+
 			if (formats.Count != other.formats.Count)
 				return false;
-			
+
 			List<XmlFormattingSettings> list = new List<XmlFormattingSettings> (other.formats);
 			foreach (XmlFormattingSettings fs in formats) {
 				bool found = false;
-				for (int n=0; n<list.Count; n++) {
-					if (fs.Equals (list [n])) {
+				for (int n = 0; n < list.Count; n++) {
+					if (fs.Equals (list[n])) {
 						list.RemoveAt (n);
 						found = true;
 						break;
@@ -72,7 +72,7 @@ namespace MonoDevelop.Xml.Formatting
 			}
 			return true;
 		}
-		
+
 		public XmlFormattingPolicy Clone ()
 		{
 			var clone = new XmlFormattingPolicy ();
@@ -82,16 +82,16 @@ namespace MonoDevelop.Xml.Formatting
 			return clone;
 		}
 	}
-	
+
 	public class XmlFormattingSettings
 	{
 		List<string> scope = new List<string> ();
-		
+
 		public XmlFormattingSettings ()
 		{
 			OmitXmlDeclaration = false;
 			IndentContent = true;
-			
+
 			AttributesInNewLine = false;
 			MaxAttributesPerLine = 10;
 			AlignAttributes = false;
@@ -100,13 +100,13 @@ namespace MonoDevelop.Xml.Formatting
 			SpacesBeforeAssignment = 0;
 			SpacesAfterAssignment = 0;
 			QuoteChar = '"';
-			
+
 			EmptyLinesBeforeStart = 0;
 			EmptyLinesAfterStart = 0;
 			EmptyLinesBeforeEnd = 0;
 			EmptyLinesAfterEnd = 0;
 		}
-		
+
 		public bool Equals (XmlFormattingSettings other)
 		{
 			if (scope.Count != other.scope.Count)
@@ -118,7 +118,7 @@ namespace MonoDevelop.Xml.Formatting
 					return false;
 				list.RemoveAt (n);
 			}
-			
+
 			return OmitXmlDeclaration == other.OmitXmlDeclaration &&
 				IndentContent == other.IndentContent &&
 				AttributesInNewLine == other.AttributesInNewLine &&
@@ -134,10 +134,10 @@ namespace MonoDevelop.Xml.Formatting
 				EmptyLinesBeforeEnd == other.EmptyLinesBeforeEnd &&
 				EmptyLinesAfterEnd == other.EmptyLinesAfterEnd;
 		}
-		
+
 		public XmlFormattingSettings Clone ()
 		{
-			XmlFormattingSettings clone = (XmlFormattingSettings) MemberwiseClone ();
+			XmlFormattingSettings clone = (XmlFormattingSettings)MemberwiseClone ();
 			clone.scope = new List<string> (scope);
 			return clone;
 		}
@@ -150,7 +150,7 @@ namespace MonoDevelop.Xml.Formatting
 
 		public bool IndentContent { get; set; }
 
-        public bool AttributesInNewLine { get; set; }
+		public bool AttributesInNewLine { get; set; }
 
 		public int MaxAttributesPerLine { get; set; }
 

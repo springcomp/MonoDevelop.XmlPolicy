@@ -46,7 +46,7 @@ namespace MonoDevelop.Xml.Formatting
 
 		static readonly Encoding unmarked_utf8encoding = new UTF8Encoding (false, false);
 
-		static readonly char[] escaped_attr_chars = new [] { '"', '&', '<', '>', '\r', '\n' };
+		static readonly char[] escaped_attr_chars = new[] { '"', '&', '<', '>', '\r', '\n' };
 		static readonly char[] escaped_text_chars_with_newlines = new[] { '&', '<', '>', '\r', '\n' };
 		static readonly char[] escaped_text_chars_without_newlines = new[] { '&', '<', '>' };
 
@@ -75,7 +75,8 @@ namespace MonoDevelop.Xml.Formatting
 			public static string Format (string format, params object[] args) => string.Format (cul, format, args);
 		}
 
-		enum XmlDeclState {
+		enum XmlDeclState
+		{
 			Allow,
 			Ignore,
 			Auto,
@@ -106,14 +107,14 @@ namespace MonoDevelop.Xml.Formatting
 		XmlNodeType node_state = XmlNodeType.None;
 		readonly XmlNamespaceManager nsmanager = new (new NameTable ());
 		int open_count;
-		XmlNodeInfo [] elements = new XmlNodeInfo [10];
+		XmlNodeInfo[] elements = new XmlNodeInfo[10];
 		readonly Stack<string> new_local_namespaces = new ();
 		readonly List<string> explicit_nsdecls = new ();
 
 		string? newline;
 		readonly bool v2;
 		int lastEmptyLineCount;
-		
+
 		XmlFormattingSettings formatSettings = new ();
 		XmlFormattingSettings defaultFormatSettings = new ();
 		TextStylePolicy textPolicy = new ();
@@ -147,8 +148,8 @@ namespace MonoDevelop.Xml.Formatting
 			check_character_validity = false;
 			v2 = true;
 		}
-		
-		readonly Dictionary<XmlNode,XmlFormattingSettings> formatMap = new Dictionary<XmlNode, XmlFormattingSettings> ();
+
+		readonly Dictionary<XmlNode, XmlFormattingSettings> formatMap = new Dictionary<XmlNode, XmlFormattingSettings> ();
 
 
 		public void WriteNode (XmlNode node, XmlFormattingPolicy formattingPolicy, TextStylePolicy textPolicy)
@@ -167,21 +168,21 @@ namespace MonoDevelop.Xml.Formatting
 			}
 			WriteNode (node);
 		}
-		
+
 		void WriteNode (XmlNode node)
 		{
 			XmlFormattingSettings oldFormat = formatSettings;
 			SetFormat (node);
-			
+
 			switch (node.NodeType) {
-				case XmlNodeType.Document: {
+			case XmlNodeType.Document: {
 					if (!defaultFormatSettings.OmitXmlDeclaration)
 						WriteDeclarationIfMissing ((XmlDocument)node);
 					WriteContent (node);
 					break;
 				}
-				case XmlNodeType.Attribute: {
-					XmlAttribute at = (XmlAttribute) node;
+			case XmlNodeType.Attribute: {
+					XmlAttribute at = (XmlAttribute)node;
 					if (at.Specified) {
 						WriteStartAttribute (at.NamespaceURI.Length > 0 ? at.Prefix : string.Empty, at.LocalName, at.NamespaceURI);
 						WriteContent (node);
@@ -189,32 +190,32 @@ namespace MonoDevelop.Xml.Formatting
 					}
 					break;
 				}
-				case XmlNodeType.CDATA: {
+			case XmlNodeType.CDATA: {
 					WriteCData (((XmlCDataSection)node).Data);
 					break;
 				}
-				case XmlNodeType.Comment: {
+			case XmlNodeType.Comment: {
 					WriteComment (((XmlComment)node).Data);
 					break;
 				}
-				case XmlNodeType.DocumentFragment: {
+			case XmlNodeType.DocumentFragment: {
 					foreach (XmlNode child in node.ChildNodes)
 						WriteNode (child);
 					break;
 				}
-				case XmlNodeType.DocumentType: {
-					XmlDocumentType dt = (XmlDocumentType) node;
+			case XmlNodeType.DocumentType: {
+					XmlDocumentType dt = (XmlDocumentType)node;
 					WriteDocType (dt.Name, dt.PublicId, dt.SystemId, dt.InternalSubset);
 					break;
 				}
-				case XmlNodeType.Element: {
-					XmlElement elem = (XmlElement) node;
+			case XmlNodeType.Element: {
+					XmlElement elem = (XmlElement)node;
 					writer.AttributesIndent = -1;
 					WriteStartElement (
 						elem.NamespaceURI == null || elem.NamespaceURI.Length == 0 ? string.Empty : elem.Prefix,
 						elem.LocalName,
 						elem.NamespaceURI);
-		
+
 					if (elem.HasAttributes) {
 						int oldBeforeSp = formatSettings.SpacesBeforeAssignment;
 						int maxLen = 0;
@@ -234,46 +235,45 @@ namespace MonoDevelop.Xml.Formatting
 						}
 						formatSettings.SpacesBeforeAssignment = oldBeforeSp;
 					}
-					
+
 					if (!elem.IsEmpty) {
 						CloseStartElement ();
 						WriteContent (elem);
 						WriteFullEndElement ();
-					}
-					else
+					} else
 						WriteEndElement ();
 					break;
 				}
-				case XmlNodeType.EntityReference: {
-					XmlEntityReference eref = (XmlEntityReference) node;
+			case XmlNodeType.EntityReference: {
+					XmlEntityReference eref = (XmlEntityReference)node;
 					WriteRaw ("&");
 					WriteName (eref.Name);
 					WriteRaw (";");
 					break;
 				}
-				case XmlNodeType.ProcessingInstruction: {
-					XmlProcessingInstruction pi = (XmlProcessingInstruction) node;
+			case XmlNodeType.ProcessingInstruction: {
+					XmlProcessingInstruction pi = (XmlProcessingInstruction)node;
 					WriteProcessingInstruction (pi.Target, pi.Data);
 					break;
 				}
-				case XmlNodeType.SignificantWhitespace: {
-					XmlSignificantWhitespace wn = (XmlSignificantWhitespace) node;
+			case XmlNodeType.SignificantWhitespace: {
+					XmlSignificantWhitespace wn = (XmlSignificantWhitespace)node;
 					WriteWhitespace (wn.Data);
 					break;
 				}
-				case XmlNodeType.Text: {
-					XmlText t = (XmlText) node;
+			case XmlNodeType.Text: {
+					XmlText t = (XmlText)node;
 					WriteString (t.Data);
 					break;
 				}
-				case XmlNodeType.Whitespace: {
-					XmlWhitespace wn = (XmlWhitespace) node;
+			case XmlNodeType.Whitespace: {
+					XmlWhitespace wn = (XmlWhitespace)node;
 					WriteWhitespace (wn.Data);
 					break;
 				}
-				case XmlNodeType.XmlDeclaration: {
+			case XmlNodeType.XmlDeclaration: {
 					if (!defaultFormatSettings.OmitXmlDeclaration) {
-						XmlDeclaration dec = (XmlDeclaration) node;
+						XmlDeclaration dec = (XmlDeclaration)node;
 						WriteRaw (string.Format ("<?xml {0}?>", dec.Value));
 					}
 					break;
@@ -289,7 +289,7 @@ namespace MonoDevelop.Xml.Formatting
 			else
 				return at.LocalName;
 		}
-		
+
 		void WriteContent (XmlNode node)
 		{
 			for (XmlNode? n = node.FirstChild; n != null; n = n.NextSibling)
@@ -304,13 +304,12 @@ namespace MonoDevelop.Xml.Formatting
 				WriteNode (declaration);
 			}
 		}
-		
+
 		void SetFormat (XmlNode node)
 		{
 			if (formatMap.TryGetValue (node, out var s)) {
 				formatSettings = s;
-			}
-			else if (node is XmlElement) {
+			} else if (node is XmlElement) {
 				formatSettings = defaultFormatSettings;
 			}
 		}
@@ -325,9 +324,9 @@ namespace MonoDevelop.Xml.Formatting
 
 		// Context Retriever
 
-		public override string? XmlLang => open_count == 0 ? null : elements [open_count - 1].XmlLang;
+		public override string? XmlLang => open_count == 0 ? null : elements[open_count - 1].XmlLang;
 
-		public override XmlSpace XmlSpace => open_count == 0 ? XmlSpace.None : elements [open_count - 1].XmlSpace;
+		public override XmlSpace XmlSpace => open_count == 0 ? XmlSpace.None : elements[open_count - 1].XmlSpace;
 
 		public override WriteState WriteState => state;
 
@@ -480,8 +479,7 @@ namespace MonoDevelop.Xml.Formatting
 				if (sysid != null)
 					writer.Write (sysid);
 				writer.Write (formatSettings.QuoteChar);
-			}
-			else if (sysid != null) {
+			} else if (sysid != null) {
 				writer.Write (" SYSTEM ");
 				writer.Write (formatSettings.QuoteChar);
 				writer.Write (sysid);
@@ -538,11 +536,11 @@ namespace MonoDevelop.Xml.Formatting
 			// automatically changes argument namespaceURI, this
 			// is kind of silly implementation. See bug #77094.
 			if (namespaces &&
-			    prefix != null && prefix.Length == 3 &&
-			    namespaceUri != XmlNamespace &&
-			    (prefix [0] == 'x' || prefix [0] == 'X') &&
-			    (prefix [1] == 'm' || prefix [1] == 'M') &&
-			    (prefix [2] == 'l' || prefix [2] == 'L'))
+				prefix != null && prefix.Length == 3 &&
+				namespaceUri != XmlNamespace &&
+				(prefix[0] == 'x' || prefix[0] == 'X') &&
+				(prefix[1] == 'm' || prefix[1] == 'M') &&
+				(prefix[2] == 'l' || prefix[2] == 'L'))
 				throw new ArgumentException ("A prefix cannot be equivalent to \"xml\" in case-insensitive match.");
 
 
@@ -551,7 +549,7 @@ namespace MonoDevelop.Xml.Formatting
 			if (state == WriteState.Element)
 				CloseStartElement ();
 			if (open_count > 0)
-				elements [open_count - 1].HasElements = true;
+				elements[open_count - 1].HasElements = true;
 
 			nsmanager.PushScope ();
 
@@ -563,7 +561,7 @@ namespace MonoDevelop.Xml.Formatting
 				if (prefix == null || namespaceUri.Length == 0)
 					prefix = null;
 			}
-			
+
 			WriteEmptyLines (formatSettings.EmptyLinesBeforeStart);
 			ResetEmptyLineCount ();
 			WriteIndent ();
@@ -577,14 +575,14 @@ namespace MonoDevelop.Xml.Formatting
 			writer.Write (localName);
 
 			if (elements.Length == open_count) {
-				var tmp = new XmlNodeInfo [open_count << 1];
+				var tmp = new XmlNodeInfo[open_count << 1];
 				Array.Copy (elements, tmp, open_count);
 				elements = tmp;
 			}
-			if (elements [open_count] == null)
-				elements [open_count] =
+			if (elements[open_count] == null)
+				elements[open_count] =
 					new XmlNodeInfo ();
-			XmlNodeInfo info = elements [open_count];
+			XmlNodeInfo info = elements[open_count];
 			info.Prefix = prefix;
 			info.LocalName = localName;
 			info.NS = namespaceUri;
@@ -604,27 +602,27 @@ namespace MonoDevelop.Xml.Formatting
 
 			state = WriteState.Element;
 		}
-		
+
 		void WriteEmptyLines (int count)
 		{
 			if (count > lastEmptyLineCount) {
-				for (int n=0; n<count - lastEmptyLineCount; n++)
+				for (int n = 0; n < count - lastEmptyLineCount; n++)
 					writer.Write (newline);
 				lastEmptyLineCount = count;
 			}
 		}
-		
+
 		void ResetEmptyLineCount ()
 		{
 			lastEmptyLineCount = 0;
 		}
-		
+
 		void WriteAssignment ()
 		{
-			for (int n=0; n < formatSettings.SpacesBeforeAssignment; n++)
+			for (int n = 0; n < formatSettings.SpacesBeforeAssignment; n++)
 				writer.Write (' ');
 			writer.Write ('=');
-			for (int n=0; n < formatSettings.SpacesAfterAssignment; n++)
+			for (int n = 0; n < formatSettings.SpacesAfterAssignment; n++)
 				writer.Write (' ');
 		}
 
@@ -656,10 +654,10 @@ namespace MonoDevelop.Xml.Formatting
 			// I save another array creation).
 			int idx = explicit_nsdecls.Count;
 			while (new_local_namespaces.Count > 0) {
-				string p = (string) new_local_namespaces.Pop ();
+				string p = (string)new_local_namespaces.Pop ();
 				bool match = false;
 				for (int i = 0; i < explicit_nsdecls.Count; i++) {
-					if ((string) explicit_nsdecls [i] == p) {
+					if ((string)explicit_nsdecls[i] == p) {
 						match = true;
 						break;
 					}
@@ -670,7 +668,7 @@ namespace MonoDevelop.Xml.Formatting
 			}
 
 			for (int i = idx; i < explicit_nsdecls.Count; i++) {
-				string prefix = (string) explicit_nsdecls [i];
+				string prefix = (string)explicit_nsdecls[i];
 				string? ns = nsmanager.LookupNamespace (prefix, false);
 				if (ns == null)
 					continue; // superceded
@@ -718,8 +716,7 @@ namespace MonoDevelop.Xml.Formatting
 					writer.Write ('>');
 					WriteEmptyLines (formatSettings.EmptyLinesAfterStart);
 					WriteEmptyLines (formatSettings.EmptyLinesBeforeEnd);
-				}
-				else {
+				} else {
 					writer.Write (" />");
 					WriteEmptyLines (formatSettings.EmptyLinesAfterEnd);
 				}
@@ -730,7 +727,7 @@ namespace MonoDevelop.Xml.Formatting
 				WriteIndentEndElement ();
 			}
 
-			XmlNodeInfo info = elements [--open_count];
+			XmlNodeInfo info = elements[--open_count];
 
 			if (full || state == WriteState.Content) {
 				writer.Write ("</");
@@ -774,8 +771,7 @@ namespace MonoDevelop.Xml.Formatting
 				isNSDecl = true;
 				if (prefix.Length == 0 && localName != "xmlns")
 					prefix = "xmlns";
-			}
-			else
+			} else
 				isNSDecl = (prefix == "xmlns" ||
 					localName == "xmlns" && prefix.Length == 0);
 
@@ -819,13 +815,12 @@ namespace MonoDevelop.Xml.Formatting
 			writer.AttributesPerLine++;
 			if (formatSettings.WrapAttributes && writer.AttributesPerLine > 1)
 				writer.MarkBlockStart ();
-			
+
 			if (formatSettings.AttributesInNewLine || writer.AttributesPerLine > formatSettings.MaxAttributesPerLine) {
 				writer.MarkBlockEnd ();
 				WriteIndentAttribute ();
 				writer.AttributesPerLine = 1;
-			}
-			else if (state != WriteState.Start)
+			} else if (state != WriteState.Start)
 				writer.Write (' ');
 
 			if (writer.AttributesIndent == -1)
@@ -868,8 +863,7 @@ namespace MonoDevelop.Xml.Formatting
 					return foundPrefix;
 				}
 				mockup = true;
-			}
-			else {
+			} else {
 				prefix = nsmanager.NameTable.Add (prefix);
 				string? existing = nsmanager.LookupNamespace (prefix, true);
 				if (existing == ns)
@@ -921,19 +915,19 @@ namespace MonoDevelop.Xml.Formatting
 				string value = preserver.ToString ();
 				if (is_preserved_xmlns) {
 					if (preserved_name.Length > 0 &&
-					    value.Length == 0)
+						value.Length == 0)
 						throw ArgumentError ("Non-empty prefix must be mapped to non-empty namespace URI.");
 					string? existing = nsmanager.LookupNamespace (preserved_name, false);
 					explicit_nsdecls.Add (preserved_name);
 					if (open_count > 0) {
 
 						if (v2 &&
-						    elements [open_count - 1].Prefix == preserved_name &&
-						    elements [open_count - 1].NS != value)
+							elements[open_count - 1].Prefix == preserved_name &&
+							elements[open_count - 1].NS != value)
 							throw new XmlException (string.Format ("Cannot redefine the namespace for prefix '{0}' used at current element", preserved_name));
 
-						if (elements [open_count - 1].NS != string.Empty ||
-						    elements [open_count - 1].Prefix != preserved_name) {
+						if (elements[open_count - 1].NS != string.Empty ||
+							elements[open_count - 1].Prefix != preserved_name) {
 							if (existing != value)
 								nsmanager.AddNamespace (preserved_name, value);
 						}
@@ -942,17 +936,17 @@ namespace MonoDevelop.Xml.Formatting
 					switch (preserved_name) {
 					case "lang":
 						if (open_count > 0)
-							elements [open_count - 1].XmlLang = value;
+							elements[open_count - 1].XmlLang = value;
 						break;
 					case "space":
 						switch (value) {
 						case "default":
 							if (open_count > 0)
-								elements [open_count - 1].XmlSpace = XmlSpace.Default;
+								elements[open_count - 1].XmlSpace = XmlSpace.Default;
 							break;
 						case "preserve":
 							if (open_count > 0)
-								elements [open_count - 1].XmlSpace = XmlSpace.Preserve;
+								elements[open_count - 1].XmlSpace = XmlSpace.Preserve;
 							break;
 						default:
 							throw ArgumentError ("Invalid value for xml:space.");
@@ -964,7 +958,7 @@ namespace MonoDevelop.Xml.Formatting
 			}
 
 			writer.Write (formatSettings.QuoteChar);
-			
+
 			if (writer.InBlock) {
 				writer.MarkBlockEnd ();
 				if (writer.Column > textPolicy.FileWidth) {
@@ -975,7 +969,7 @@ namespace MonoDevelop.Xml.Formatting
 					writer.WriteBlock (false);
 				}
 			}
-			
+
 			state = WriteState.Element;
 		}
 
@@ -986,7 +980,7 @@ namespace MonoDevelop.Xml.Formatting
 			if (text == null)
 				throw ArgumentError ("text");
 
-			if (text.Length > 0 && text [text.Length - 1] == '-')
+			if (text.Length > 0 && text[text.Length - 1] == '-')
 				throw ArgumentError ("An input string to WriteComment method must not end with '-'. Escape it with '&#2D;'.");
 			if (StringUtil.IndexOf (text, "--") > 0)
 				throw ArgumentError ("An XML comment cannot end with \"-\".");
@@ -1042,7 +1036,7 @@ namespace MonoDevelop.Xml.Formatting
 
 			// huh? Shouldn't it accept an empty string???
 			if (text.Length == 0 ||
-			    XmlChar.IndexOfNonWhitespace (text) >= 0)
+				XmlChar.IndexOfNonWhitespace (text) >= 0)
 				throw ArgumentError ("WriteWhitespace method accepts only whitespaces.");
 
 			ShiftStateTopLevel ("Whitespace", true, false, true);
@@ -1101,15 +1095,15 @@ namespace MonoDevelop.Xml.Formatting
 		void WriteCharacterEntity (char ch, char high, bool surrogate)
 		{
 			if (surrogate &&
-			    ('\uD800' > high || high > '\uDC00' ||
-			     '\uDC00' > ch || ch > '\uDFFF'))
-				throw ArgumentError (string.Format ("Invalid surrogate pair was found. Low: &#x{0:X}; High: &#x{1:X};", (int) ch, (int) high));
+				('\uD800' > high || high > '\uDC00' ||
+				 '\uDC00' > ch || ch > '\uDFFF'))
+				throw ArgumentError (string.Format ("Invalid surrogate pair was found. Low: &#x{0:X}; High: &#x{1:X};", (int)ch, (int)high));
 			else if (check_character_validity && XmlChar.IsInvalid (ch))
 				throw ArgumentError ($"Invalid character &#x{(int)ch:X};");
 
 			ShiftStateContent ("Character", true);
 
-			int v = surrogate ? (high - 0xD800) * 0x400 + ch - 0xDC00 + 0x10000 : (int) ch;
+			int v = surrogate ? (high - 0xD800) * 0x400 + ch - 0xDC00 + 0x10000 : (int)ch;
 			writer.Write ("&#x");
 			writer.Write (v.ToString ("X", CultureInfo.InvariantCulture));
 			writer.Write (';');
@@ -1164,7 +1158,7 @@ namespace MonoDevelop.Xml.Formatting
 
 			ShiftStateContent ("QName", true);
 
-			string? prefix = string.IsNullOrEmpty (ns)? "" : LookupPrefix (ns);
+			string? prefix = string.IsNullOrEmpty (ns) ? "" : LookupPrefix (ns);
 			if (prefix is null) {
 				if (state == WriteState.Attribute)
 					prefix = MockupPrefix (ns, false);
@@ -1191,14 +1185,14 @@ namespace MonoDevelop.Xml.Formatting
 				throw ArgumentOutOfRangeError ("count");
 		}
 
-		public override void WriteBase64 (byte [] buffer, int index, int count)
+		public override void WriteBase64 (byte[] buffer, int index, int count)
 		{
 			CheckChunkRange (buffer, index, count);
 
 			WriteString (Convert.ToBase64String (buffer, index, count));
 		}
 
-		public override void WriteBinHex (byte [] buffer, int index, int count)
+		public override void WriteBinHex (byte[] buffer, int index, int count)
 		{
 			CheckChunkRange (buffer, index, count);
 
@@ -1207,7 +1201,7 @@ namespace MonoDevelop.Xml.Formatting
 			WriteBinHex (buffer, index, count, writer);
 		}
 
-		internal static void WriteBinHex (byte [] buffer, int index, int count, TextWriter w)
+		internal static void WriteBinHex (byte[] buffer, int index, int count, TextWriter w)
 		{
 			if (buffer == null)
 				throw new ArgumentNullException (nameof (buffer));
@@ -1227,21 +1221,21 @@ namespace MonoDevelop.Xml.Formatting
 			// Copied from XmlTextWriter.WriteBinHex ()
 			int end = index + count;
 			for (int i = index; i < end; i++) {
-				int val = buffer [i];
+				int val = buffer[i];
 				int high = val >> 4;
 				int low = val & 15;
 				if (high > 9)
-					w.Write ((char) (high + 55));
+					w.Write ((char)(high + 55));
 				else
-					w.Write ((char) (high + 0x30));
+					w.Write ((char)(high + 0x30));
 				if (low > 9)
-					w.Write ((char) (low + 55));
+					w.Write ((char)(low + 55));
 				else
-					w.Write ((char) (low + 0x30));
+					w.Write ((char)(low + 0x30));
 			}
 		}
 
-		public override void WriteChars (char [] buffer, int index, int count)
+		public override void WriteChars (char[] buffer, int index, int count)
 		{
 			CheckChunkRange (buffer, index, count);
 
@@ -1251,7 +1245,7 @@ namespace MonoDevelop.Xml.Formatting
 				state == WriteState.Attribute);
 		}
 
-		public override void WriteRaw (char [] buffer, int index, int count)
+		public override void WriteRaw (char[] buffer, int index, int count)
 		{
 			CheckChunkRange (buffer, index, count);
 
@@ -1292,7 +1286,7 @@ namespace MonoDevelop.Xml.Formatting
 			if (!formatSettings.IndentContent)
 				return false;
 			for (int i = open_count - 1; i >= 0; i--)
-				if (!attribute && elements [i].HasSimple)
+				if (!attribute && elements[i].HasSimple)
 					return false;
 
 			if (state != WriteState.Start)
@@ -1340,11 +1334,11 @@ namespace MonoDevelop.Xml.Formatting
 
 		void CheckMixedContentState ()
 		{
-//			if (open_count > 0 &&
-//			    state != WriteState.Attribute)
-//				elements [open_count - 1].HasSimple = true;
+			//			if (open_count > 0 &&
+			//			    state != WriteState.Attribute)
+			//				elements [open_count - 1].HasSimple = true;
 			if (open_count > 0)
-				elements [open_count - 1].HasSimple = true;
+				elements[open_count - 1].HasSimple = true;
 		}
 
 		void ShiftStateContent (string occurred, bool allowAttribute)
@@ -1352,7 +1346,7 @@ namespace MonoDevelop.Xml.Formatting
 			switch (state) {
 			case WriteState.Error:
 			case WriteState.Closed:
-					throw StateError (occurred);
+				throw StateError (occurred);
 			case WriteState.Prolog:
 			case WriteState.Start:
 				if (!allow_doc_fragment || is_document_entity)
@@ -1378,8 +1372,8 @@ namespace MonoDevelop.Xml.Formatting
 
 		void WriteEscapedString (string text, bool isAttribute)
 		{
-			escaped_attr_chars [0] = formatSettings.QuoteChar;
-			char [] escaped = isAttribute ?
+			escaped_attr_chars[0] = formatSettings.QuoteChar;
+			char[] escaped = isAttribute ?
 				escaped_attr_chars :
 				(newline_handling != NewLineHandling.None
 					? escaped_text_chars_with_newlines
@@ -1387,7 +1381,7 @@ namespace MonoDevelop.Xml.Formatting
 
 			int idx = text.IndexOfAny (escaped);
 			if (idx >= 0) {
-				char [] arr = text.ToCharArray ();
+				char[] arr = text.ToCharArray ();
 				WriteCheckedBuffer (arr, 0, idx);
 				WriteEscapedBuffer (
 					arr, idx, arr.Length - idx, isAttribute);
@@ -1400,7 +1394,7 @@ namespace MonoDevelop.Xml.Formatting
 		{
 			int i = XmlChar.IndexOfInvalid (s, true);
 			if (i >= 0) {
-				char [] arr = s.ToCharArray ();
+				char[] arr = s.ToCharArray ();
 				writer.Write (arr, 0, i);
 				WriteCheckedBuffer (arr, i, arr.Length - i);
 			} else {
@@ -1409,7 +1403,7 @@ namespace MonoDevelop.Xml.Formatting
 			}
 		}
 
-		void WriteCheckedBuffer (char [] text, int idx, int length)
+		void WriteCheckedBuffer (char[] text, int idx, int length)
 		{
 			int start = idx;
 			int end = idx + length;
@@ -1419,7 +1413,7 @@ namespace MonoDevelop.Xml.Formatting
 				if (start < idx)
 					writer.Write (text, start, idx - start);
 				writer.Write ("&#x");
-				writer.Write (((int) text [idx]).ToString (
+				writer.Write (((int)text[idx]).ToString (
 					"X",
 					CultureInfo.InvariantCulture));
 				writer.Write (';');
@@ -1430,13 +1424,13 @@ namespace MonoDevelop.Xml.Formatting
 				writer.Write (text, start, end - start);
 		}
 
-		void WriteEscapedBuffer (char [] text, int index, int length,
+		void WriteEscapedBuffer (char[] text, int index, int length,
 			bool isAttribute)
 		{
 			int start = index;
 			int end = index + length;
 			for (int i = start; i < end; i++) {
-				switch (text [i]) {
+				switch (text[i]) {
 				default:
 					continue;
 				case '&':
@@ -1445,7 +1439,7 @@ namespace MonoDevelop.Xml.Formatting
 					if (start < i)
 						WriteCheckedBuffer (text, start, i - start);
 					writer.Write ('&');
-					switch (text [i]) {
+					switch (text[i]) {
 					case '&': writer.Write ("amp;"); break;
 					case '<': writer.Write ("lt;"); break;
 					case '>': writer.Write ("gt;"); break;
@@ -1455,31 +1449,31 @@ namespace MonoDevelop.Xml.Formatting
 					break;
 				case '"':
 				case '\'':
-					if (isAttribute && text [i] == formatSettings.QuoteChar)
+					if (isAttribute && text[i] == formatSettings.QuoteChar)
 						goto case '&';
 					continue;
 				case '\r':
-					if (i + 1 < end && text [i] == '\n')
+					if (i + 1 < end && text[i] == '\n')
 						i++; // CRLF
 					goto case '\n';
 				case '\n':
 					if (start < i)
 						WriteCheckedBuffer (text, start, i - start);
 					if (isAttribute) {
-						writer.Write (text [i] == '\r' ?
+						writer.Write (text[i] == '\r' ?
 							"&#xD;" : "&#xA;");
 						break;
 					}
 					switch (newline_handling) {
 					case NewLineHandling.Entitize:
-						writer.Write (text [i] == '\r' ?
+						writer.Write (text[i] == '\r' ?
 							"&#xD;" : "&#xA;");
 						break;
 					case NewLineHandling.Replace:
 						writer.Write (newline);
 						break;
 					default:
-						writer.Write (text [i]);
+						writer.Write (text[i]);
 						break;
 					}
 					break;

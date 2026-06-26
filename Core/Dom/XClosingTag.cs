@@ -30,7 +30,7 @@ namespace MonoDevelop.Xml.Dom
 {
 	public class XClosingTag : XNode, INamedXObject
 	{
-		public XClosingTag (int startOffset) : base (startOffset) {}
+		public XClosingTag (int startOffset) : base (startOffset) { }
 
 		public XClosingTag (XName name, int startOffset) : base (startOffset) => Name = name;
 
@@ -39,7 +39,7 @@ namespace MonoDevelop.Xml.Dom
 		public override bool IsComplete { get { return base.IsComplete && IsNamed; } }
 		public bool IsNamed { get { return Name.IsValid; } }
 
-		protected XClosingTag () {}
+		protected XClosingTag () { }
 		protected override XObject NewInstance () { return new XClosingTag (); }
 
 		/// <summary>
@@ -57,13 +57,13 @@ namespace MonoDevelop.Xml.Dom
 		protected override void ShallowCopyFrom (XObject copyFrom)
 		{
 			base.ShallowCopyFrom (copyFrom);
-			var copyFromAtt = (XClosingTag) copyFrom;
+			var copyFromAtt = (XClosingTag)copyFrom;
 			//immutable types
 			Name = copyFromAtt.Name;
 		}
 
 		public override string FriendlyPathRepresentation => "/" + Name.FullName;
 
-		public TextSpan NameSpan => new (Span.Start + 2, Name.Length);
+		public TextSpan NameSpan => Span.IsValid ? new (Span.Start + 2, Name.Length) : TextSpan.Invalid;
 	}
 }

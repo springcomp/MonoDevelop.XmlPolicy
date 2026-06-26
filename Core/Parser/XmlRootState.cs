@@ -151,7 +151,7 @@ namespace MonoDevelop.Xml.Parser
 
 			case CDATA:
 				string cdataStr = "CDATA[";
-				if (c == cdataStr [context.KeywordBuilder.Length]) {
+				if (c == cdataStr[context.KeywordBuilder.Length]) {
 					context.KeywordBuilder.Append (c);
 					if (context.KeywordBuilder.Length < cdataStr.Length)
 						return null;
@@ -162,7 +162,7 @@ namespace MonoDevelop.Xml.Parser
 
 			case DOCTYPE:
 				string docTypeStr = "OCTYPE";
-				if (c == docTypeStr [context.KeywordBuilder.Length]) {
+				if (c == docTypeStr[context.KeywordBuilder.Length]) {
 					context.KeywordBuilder.Append (c);
 					if (context.KeywordBuilder.Length < docTypeStr.Length)
 						return null;
@@ -206,7 +206,7 @@ namespace MonoDevelop.Xml.Parser
 					position: xobject.Span.Start,
 					previousState: Parent,
 					currentStateLength: 0,
-					nodes: xobject.Parent is not null? NodeStack.FromParents (xobject) : new NodeStack (CreateDocument ()),
+					nodes: xobject.Parent is not null ? NodeStack.FromParents (xobject) : new NodeStack (CreateDocument ()),
 					stateTag: FREE
 				);
 

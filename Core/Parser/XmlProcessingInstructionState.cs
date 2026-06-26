@@ -36,7 +36,7 @@ namespace MonoDevelop.Xml.Parser
 		const int STARTOFFSET = 2; // "<?"
 		const int NOMATCH = 0;
 		const int QUESTION = 1;
-		
+
 		public override XmlParserState? PushChar (char c, XmlParserContext context, ref bool replayCharacter, bool isEndOfFile)
 		{
 			if (context.CurrentStateLength == 0) {
@@ -55,20 +55,20 @@ namespace MonoDevelop.Xml.Parser
 			} else if ((c == '>' && context.StateTag == QUESTION) || isEndOfFile) {
 				// if the '?' is followed by a '>', the state has ended
 				// so attach a node to the DOM and end the state
-				var xpi = (XProcessingInstruction) context.Nodes.Pop ();
+				var xpi = (XProcessingInstruction)context.Nodes.Pop ();
 
 				// at this point the position isn't incremented to include the '>' yet
 				// so make sure to include the closing '>' in the span
 				xpi.End (context.PositionAfterCurrentChar);
 
 				if (context.BuildTree) {
-					((XContainer) context.Nodes.Peek ()).AddChildNode (xpi); 
+					((XContainer)context.Nodes.Peek ()).AddChildNodeFromParser (xpi);
 				}
 				return Parent;
 			} else {
 				context.StateTag = NOMATCH;
 			}
-			
+
 			return null;
 		}
 
@@ -87,7 +87,7 @@ namespace MonoDevelop.Xml.Parser
 					position: position,
 					previousState: Parent,
 					currentStateLength: length,
-					stateTag: position == pi.Span.End - 1? QUESTION : NOMATCH,
+					stateTag: position == pi.Span.End - 1 ? QUESTION : NOMATCH,
 					nodes: parents
 				);
 			}

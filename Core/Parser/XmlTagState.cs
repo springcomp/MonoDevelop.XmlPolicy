@@ -47,10 +47,10 @@ namespace MonoDevelop.Xml.Parser
 		readonly XmlAttributeState AttributeState;
 		readonly XmlNameState NameState;
 
-		public XmlTagState () : this (new XmlAttributeState ()) {}
+		public XmlTagState () : this (new XmlAttributeState ()) { }
 
-		public XmlTagState  (XmlAttributeState attributeState)
-			: this (attributeState, new XmlNameState ()) {}
+		public XmlTagState (XmlAttributeState attributeState)
+			: this (attributeState, new XmlNameState ()) { }
 
 		public XmlTagState (XmlAttributeState attributeState, XmlNameState nameState)
 		{
@@ -63,7 +63,7 @@ namespace MonoDevelop.Xml.Parser
 
 		public override XmlParserState? PushChar (char c, XmlParserContext context, ref bool replayCharacter, bool isEndOfFile)
 		{
-			var peekedNode = (XContainer) context.Nodes.Peek ();
+			var peekedNode = (XContainer)context.Nodes.Peek ();
 			var element = peekedNode as XElement;
 
 			// if the current node on the stack is ended or not an element, then it's the parent
@@ -77,7 +77,7 @@ namespace MonoDevelop.Xml.Parser
 				element = new XElement (context.Position - STARTOFFSET) { Parent = parent };
 				context.Nodes.Push (element);
 				if (context.BuildTree) {
-					parent.AddChildNode (element);
+					parent.AddChildNodeFromParser (element);
 				}
 			}
 
@@ -87,8 +87,7 @@ namespace MonoDevelop.Xml.Parser
 				}
 				if (isEndOfFile) {
 					context.Diagnostics?.Add (XmlCoreDiagnostics.IncompleteTagEof, context.PositionBeforeCurrentChar);
-				}
-				else if (element.Name.IsValid) {
+				} else if (element.Name.IsValid) {
 					context.Diagnostics?.Add (XmlCoreDiagnostics.MalformedNamedTag, context.PositionBeforeCurrentChar, element.Name.FullName, '<');
 				} else {
 					context.Diagnostics?.Add (XmlCoreDiagnostics.UnnamedTag, context.PositionBeforeCurrentChar);
@@ -223,7 +222,7 @@ namespace MonoDevelop.Xml.Parser
 						prevStateEnd = att.Span.End;
 						prevState = AttributeState;
 						//spine parser is currently expected to have attributes
-						newEl.Attributes.AddAttribute ((XAttribute)att.ShallowCopy ());
+						newEl.Attributes.AddAttributeFromParser ((XAttribute)att.ShallowCopy ());
 						continue;
 					}
 					if (att.Span.End > position) {

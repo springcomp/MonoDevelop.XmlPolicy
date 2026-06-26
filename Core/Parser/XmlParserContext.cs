@@ -62,11 +62,11 @@ namespace MonoDevelop.Xml.Parser
 		internal bool IsAtEndOfFile { get; set; }
 
 		// during EOF, the position is after the last char, so these helpers ensure we don't end up with an invalid span
-		internal int PositionBeforeCurrentChar => IsAtEndOfFile? Position - 1 : Position;
+		internal int PositionBeforeCurrentChar => IsAtEndOfFile ? Position - 1 : Position;
 		internal int PositionAfterCurrentChar => IsAtEndOfFile ? Position - 1 : Position + 1;
 
-		internal TextSpan CurrentStateSpanIncludingCurrentChar => TextSpan.FromBounds(Position - CurrentStateLength, PositionAfterCurrentChar);
-		internal TextSpan CurrentStateSpanExcludingCurrentChar => TextSpan.FromBounds(Position - CurrentStateLength, PositionBeforeCurrentChar);
+		internal TextSpan CurrentStateSpanIncludingCurrentChar => TextSpan.FromBounds (Position - CurrentStateLength, PositionAfterCurrentChar);
+		internal TextSpan CurrentStateSpanExcludingCurrentChar => TextSpan.FromBounds (Position - CurrentStateLength, PositionBeforeCurrentChar);
 
 		public void ConnectNodes ()
 		{
@@ -74,7 +74,7 @@ namespace MonoDevelop.Xml.Parser
 			foreach (XObject o in Nodes) {
 				XContainer? container = o as XContainer;
 				if (prev != null && container != null && prev.IsComplete)
-					container.AddChildNode (prev);
+					container.AddChildNodeFromParser (prev);
 				if (o.Parent != null)
 					break;
 				prev = o as XNode;

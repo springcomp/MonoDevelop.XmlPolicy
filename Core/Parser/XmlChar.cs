@@ -35,7 +35,7 @@ namespace MonoDevelop.Xml.Parser
 {
 	public class XmlChar
 	{
-		public static readonly char [] WhitespaceChars = new char [] {' ', '\n', '\t', '\r'};
+		public static readonly char[] WhitespaceChars = new char[] { ' ', '\n', '\t', '\r' };
 
 		public static bool IsWhitespace (int ch)
 		{
@@ -45,15 +45,15 @@ namespace MonoDevelop.Xml.Parser
 		public static bool IsWhitespace (string str)
 		{
 			for (int i = 0; i < str.Length; i++)
-				if (!IsWhitespace (str [i])) return false;
-				
+				if (!IsWhitespace (str[i])) return false;
+
 			return true;
 		}
 
 		public static int IndexOfNonWhitespace (string str)
 		{
 			for (int i = 0; i < str.Length; i++)
-				if (!IsWhitespace (str [i])) return i;
+				if (!IsWhitespace (str[i])) return i;
 			return -1;
 		}
 
@@ -70,7 +70,7 @@ namespace MonoDevelop.Xml.Parser
 
 			if ((ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z')) {
 				return true;
-			} else if ((uint) ch <= 0xFFFF) {
+			} else if ((uint)ch <= 0xFFFF) {
 				return (nameBitmap[(firstNamePages[ch >> 8] << 3) + ((ch & 0xFF) >> 5)] & (1 << (ch & 0x1F))) != 0;
 			}
 
@@ -109,32 +109,32 @@ namespace MonoDevelop.Xml.Parser
 		public static int IndexOfInvalid (string s, bool allowSurrogate)
 		{
 			for (int i = 0; i < s.Length; i++)
-				if (IsInvalid (s [i])) {
+				if (IsInvalid (s[i])) {
 					if (!allowSurrogate ||
-					    i + 1 == s.Length ||
-					    s [i] < '\uD800' ||
-					    s [i] >= '\uDC00' ||
-					    s [i + 1] < '\uDC00' ||
-					    s [i + 1] >= '\uE000')
+						i + 1 == s.Length ||
+						s[i] < '\uD800' ||
+						s[i] >= '\uDC00' ||
+						s[i + 1] < '\uDC00' ||
+						s[i + 1] >= '\uE000')
 						return i;
 					i++;
 				}
 			return -1;
 		}
 
-		public static int IndexOfInvalid (char [] s, int start, int length, bool allowSurrogate)
+		public static int IndexOfInvalid (char[] s, int start, int length, bool allowSurrogate)
 		{
 			int end = start + length;
 			if (s.Length < end)
 				throw new ArgumentOutOfRangeException (nameof (length));
 			for (int i = start; i < end; i++)
-				if (IsInvalid (s [i])) {
+				if (IsInvalid (s[i])) {
 					if (!allowSurrogate ||
-					    i + 1 == end ||
-					    s [i] < '\uD800' ||
-					    s [i] >= '\uDC00' ||
-					    s [i + 1] < '\uDC00' ||
-					    s [i + 1] >= '\uE000')
+						i + 1 == end ||
+						s[i] < '\uD800' ||
+						s[i] >= '\uDC00' ||
+						s[i + 1] < '\uDC00' ||
+						s[i + 1] >= '\uE000')
 						return i;
 					i++;
 				}
@@ -154,7 +154,7 @@ namespace MonoDevelop.Xml.Parser
 
 			if ((ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z')) {
 				return true;
-			} else if ((uint) ch <= 0xFFFF) {
+			} else if ((uint)ch <= 0xFFFF) {
 				return (nameBitmap[(namePages[ch >> 8] << 3) + ((ch & 0xFF) >> 5)] & (1 << (ch & 0x1F))) != 0;
 			} else {
 				return false;
@@ -165,8 +165,7 @@ namespace MonoDevelop.Xml.Parser
 		{
 			bool result = false;
 
-			if (ch >= 0 && ch <= 0xFFFF && ch != ':')
-			{
+			if (ch >= 0 && ch <= 0xFFFF && ch != ':') {
 				result = (nameBitmap[(namePages[ch >> 8] << 3) + ((ch & 0xFF) >> 5)] & (1 << (ch & 0x1F))) != 0;
 			}
 
@@ -177,10 +176,10 @@ namespace MonoDevelop.Xml.Parser
 		{
 			if (str.Length == 0)
 				return false;
-			if (!IsFirstNameChar (str [0]))
+			if (!IsFirstNameChar (str[0]))
 				return false;
 			for (int i = 1; i < str.Length; i++)
-				if (!IsNameChar (str [i]))
+				if (!IsNameChar (str[i]))
 					return false;
 			return true;
 		}
@@ -189,10 +188,10 @@ namespace MonoDevelop.Xml.Parser
 		{
 			if (str.Length == 0)
 				return false;
-			if (!IsFirstNameChar (str [0]))
+			if (!IsFirstNameChar (str[0]))
 				return false;
 			for (int i = 0; i < str.Length; i++)
-				if (!IsNCNameChar (str [i]))
+				if (!IsNCNameChar (str[i]))
 					return false;
 			return true;
 		}
@@ -202,20 +201,20 @@ namespace MonoDevelop.Xml.Parser
 			if (str.Length == 0)
 				return false;
 			for (int i = 0; i < str.Length; i++)
-				if (!IsNameChar (str [i]))
+				if (!IsNameChar (str[i]))
 					return false;
 			return true;
 		}
 
 		public static bool IsPubidChar (int ch)
 		{
-			return (IsWhitespace(ch) && ch != '\t') | ('a' <= ch && ch <= 'z') | ('A' <= ch && ch <= 'Z') | ('0' <= ch && ch <= '9') | "-'()+,./:=?;!*#@$_%".IndexOf((char)ch) >= 0;
+			return (IsWhitespace (ch) && ch != '\t') | ('a' <= ch && ch <= 'z') | ('A' <= ch && ch <= 'Z') | ('0' <= ch && ch <= '9') | "-'()+,./:=?;!*#@$_%".IndexOf ((char)ch) >= 0;
 		}
 
 		public static bool IsPubid (string str)
 		{
 			for (int i = 0; i < str.Length; i++)
-				if (!IsPubidChar (str [i]))
+				if (!IsPubidChar (str[i]))
 					return false;
 			return true;
 		}
@@ -230,23 +229,18 @@ namespace MonoDevelop.Xml.Parser
 		/// </summary>
 		/// <param name="ianaEncoding">The encoding to check.</param>
 		/// <returns></returns>
-		public static bool IsValidIANAEncoding (string ianaEncoding) 
+		public static bool IsValidIANAEncoding (string ianaEncoding)
 		{
-			if (ianaEncoding != null) 
-			{
+			if (ianaEncoding != null) {
 				int length = ianaEncoding.Length;
-				if (length > 0) 
-				{
+				if (length > 0) {
 					char c = ianaEncoding[0];
-					if ((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z')) 
-					{
-						for (int i = 1; i < length; i++) 
-						{
+					if ((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z')) {
+						for (int i = 1; i < length; i++) {
 							c = ianaEncoding[i];
 							if ((c < 'A' || c > 'Z') && (c < 'a' || c > 'z') &&
 								(c < '0' || c > '9') && c != '.' && c != '_' &&
-								c != '-') 
-							{
+								c != '-') {
 								return false;
 							}
 						}
@@ -275,7 +269,7 @@ namespace MonoDevelop.Xml.Parser
 			}
 		}
 
-		static readonly byte [] firstNamePages =
+		static readonly byte[] firstNamePages =
 		{
 			0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x00,
 			0x00, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F,
@@ -311,7 +305,7 @@ namespace MonoDevelop.Xml.Parser
 			0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
 		};
 
-		static readonly byte [] namePages =
+		static readonly byte[] namePages =
 		{
 			0x19, 0x03, 0x1A, 0x1B, 0x1C, 0x1D, 0x1E, 0x00,
 			0x00, 0x1F, 0x20, 0x21, 0x22, 0x23, 0x24, 0x25,
@@ -347,7 +341,7 @@ namespace MonoDevelop.Xml.Parser
 			0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
 		};
 
-		static readonly uint [] nameBitmap =
+		static readonly uint[] nameBitmap =
 		{
 			0x00000000, 0x00000000, 0x00000000, 0x00000000,
 			0x00000000, 0x00000000, 0x00000000, 0x00000000,

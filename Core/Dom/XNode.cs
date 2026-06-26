@@ -30,10 +30,68 @@ namespace MonoDevelop.Xml.Dom
 {
 	public abstract class XNode : XObject
 	{
-		protected XNode (int startOffset) : base (startOffset) {}
-		protected XNode (TextSpan span) : base (span) {}
-		protected XNode () {}
+		protected XNode (int startOffset) : base (startOffset) { }
+		protected XNode (TextSpan span) : base (span) { }
+		protected XNode () { }
 
 		public XNode? NextSibling { get; internal protected set; }
+
+		/// <summary>
+		/// Gets the previous sibling of this node, or <see langword="null"/> if this is the first child.
+		/// Computed by walking the parent's child list.
+		/// </summary>
+		public XNode? PreviousSibling {
+			get {
+				if (Parent is XContainer container) {
+					var n = container.FirstChild;
+					while (n != null) {
+						if (n.NextSibling == this)
+							return n;
+						n = n.NextSibling;
+					}
+				}
+				return null;
+			}
+		}
+
+		/// <summary>
+		/// Applies the span invalidation contract: marks this node, all following siblings,
+		/// and all ancestors up to the root as <see cref="TextSpan.Invalid"/>.
+		/// Also sets the owning <see cref="XDocument.IsDirty"/> flag when the root is a document.
+		/// </summary>
+		internal void InvalidateSpanChain ()
+		{
+			InvalidateSpan ();
+			var sib = NextSibling;
+			while (sib is not null) {
+				sib.InvalidateSpan ();
+				sib = sib.NextSibling;
+			}
+			var ancestor = Parent;
+			while (ancestor is not null) {
+				ancestor.InvalidateSpan ();
+				if (ancestor is XDocument doc)
+					doc.IsDirty = true;
+				ancestor = ancestor.Parent;
+			}
+		}
+
+		/// <summary>
+		/// Creates a detached clone of this node.
+		/// </summary>
+		/// <param name="deep">
+		/// When <see langword="true"/>, clone the full subtree recursively.
+		/// When <see langword="false"/>, clone only this node.
+		/// </param>
+		public XNode Clone (bool deep) => CloneCore (deep);
+
+		internal virtual XNode CloneCore (bool deep)
+		{
+			var clone = (XNode)ShallowCopy ();
+			clone.Parent = null;
+			clone.NextSibling = null;
+			clone.SetSpan (TextSpan.Invalid);
+			return clone;
+		}
 	}
 }

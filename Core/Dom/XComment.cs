@@ -30,14 +30,24 @@ namespace MonoDevelop.Xml.Dom
 {
 	public class XComment : XNode
 	{
-		public XComment (int startOffset) : base (startOffset) {}
-		public XComment (TextSpan span) : base (span) {}
+		public XComment (int startOffset) : base (startOffset) { }
+		public XComment (TextSpan span) : base (span) { }
 
-		protected XComment () {}
+		/// <summary>
+		/// Creates a new comment node with the given text and no source offset.
+		/// <see cref="XObject.Span"/> is set to <see cref="TextSpan.Invalid"/>.
+		/// </summary>
+		public XComment (string text) : base (TextSpan.Invalid)
+		{
+			InnerText = text;
+		}
+
+		protected XComment () { }
 		protected override XObject NewInstance () { return new XComment (); }
 
 		public string InnerText { get; private set; } = "";
 
+		/// <remarks>This method is intended for parser use only. Use <see cref="SetText"/> to mutate text content.</remarks>
 		public void End (string text)
 		{
 			int startLen = "<!--".Length;
@@ -45,6 +55,16 @@ namespace MonoDevelop.Xml.Dom
 
 			InnerText = text;
 			Span = new TextSpan (Span.Start, startLen + text.Length + endLen);
+		}
+
+		/// <summary>
+		/// Sets the comment text and invalidates the spans of this node, its following siblings,
+		/// and all ancestor nodes per the span contract.
+		/// </summary>
+		public void SetText (string text)
+		{
+			InnerText = text;
+			InvalidateSpanChain ();
 		}
 
 		public override string FriendlyPathRepresentation {

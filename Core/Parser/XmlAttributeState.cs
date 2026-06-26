@@ -45,7 +45,7 @@ namespace MonoDevelop.Xml.Parser
 		public XmlAttributeState () : this (
 			new XmlNameState (),
 			new XmlAttributeValueState ())
-		{}
+		{ }
 
 		public XmlAttributeState (
 			XmlNameState nameState,
@@ -60,7 +60,7 @@ namespace MonoDevelop.Xml.Parser
 			var att = context.Nodes.Peek () as XAttribute;
 
 			//state has just been entered
-			if (context.CurrentStateLength == 0 || att is null)  {
+			if (context.CurrentStateLength == 0 || att is null) {
 				if (context.PreviousState is XmlNameState) {
 					if (att is null) {
 						InvalidParserStateException.ThrowExpected<XAttribute> (context);
@@ -72,8 +72,7 @@ namespace MonoDevelop.Xml.Parser
 						return Parent;
 					}
 					context.StateTag = GETTINGEQ;
-				}
-				else if (context.PreviousState is XmlAttributeValueState) {
+				} else if (context.PreviousState is XmlAttributeValueState) {
 					if (att is null) {
 						InvalidParserStateException.ThrowExpected<XAttribute> (context);
 					}
@@ -82,8 +81,7 @@ namespace MonoDevelop.Xml.Parser
 					replayCharacter = true;
 					EndAndPop (logDuplicate: true);
 					return Parent;
-				}
-				else {
+				} else {
 					//starting a new attribute
 					Debug.Assert (att == null);
 					Debug.Assert (context.StateTag == NAMING);
@@ -146,7 +144,7 @@ namespace MonoDevelop.Xml.Parser
 					context.Diagnostics?.Add (XmlCoreDiagnostics.DuplicateAttributeName, att.Span, att.Name);
 				}
 
-				element.Attributes.AddAttribute (att);
+				element.Attributes.AddAttributeFromParser (att);
 				return Parent;
 			}
 		}

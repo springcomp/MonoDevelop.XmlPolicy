@@ -30,13 +30,48 @@ namespace MonoDevelop.Xml.Dom
 {
 	public class XCData : XNode
 	{
-		public XCData (int startOffset) : base (startOffset) {}
-		public XCData (TextSpan span) : base (span) {}
+		public XCData (int startOffset) : base (startOffset) { }
+		public XCData (TextSpan span) : base (span) { }
 
-		protected XCData () {}
+		/// <summary>
+		/// Creates a new CDATA section node with the given text and no source offset.
+		/// <see cref="XObject.Span"/> is set to <see cref="TextSpan.Invalid"/>.
+		/// </summary>
+		public XCData (string text) : base (TextSpan.Invalid)
+		{
+			InnerText = text;
+		}
+
+		protected XCData () { }
 		protected override XObject NewInstance () { return new XCData (); }
 
-		public string? InnerText { get; internal set; }
+		public string InnerText { get; private set; } = "";
+
+		/// <remarks>This method is intended for parser use only. Use <see cref="SetText"/> to mutate text content.</remarks>
+		public void End (string text)
+		{
+			const int startLen = 9; // "<![CDATA["
+			const int endLen = 3;   // "]]>"
+			InnerText = text;
+			Span = new TextSpan (Span.Start, startLen + text.Length + endLen);
+		}
+
+		/// <summary>
+		/// Sets the CDATA text and invalidates the spans of this node, its following siblings,
+		/// and all ancestor nodes per the span contract.
+		/// </summary>
+		public void SetText (string text)
+		{
+			InnerText = text;
+			InvalidateSpanChain ();
+		}
+
+		protected override void ShallowCopyFrom (XObject copyFrom)
+		{
+			var other = (XCData)copyFrom;
+			InnerText = other.InnerText;
+			base.ShallowCopyFrom (copyFrom);
+		}
 
 		public override string FriendlyPathRepresentation {
 			get { return "<![CDATA[ ]]>"; }

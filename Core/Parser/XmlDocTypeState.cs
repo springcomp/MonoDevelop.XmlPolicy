@@ -61,8 +61,7 @@ namespace MonoDevelop.Xml.Parser
 					replayCharacter = true;
 					return nameState;
 				}
-			}
-			else if (doc.PublicFpi == null) {
+			} else if (doc.PublicFpi == null) {
 				if (context.StateTag == 0) {
 					if (c == 's' || c == 'S') {
 						context.StateTag = 1;
@@ -70,7 +69,8 @@ namespace MonoDevelop.Xml.Parser
 					} else if (c == 'p' || c == 'P') {
 						context.StateTag = -1;
 						return null;
-					} if (XmlChar.IsWhitespace (c)) {
+					}
+					if (XmlChar.IsWhitespace (c)) {
 						return null;
 					}
 				} else if (Math.Abs (context.StateTag) < 6) {
@@ -100,7 +100,7 @@ namespace MonoDevelop.Xml.Parser
 						}
 					} else {
 						if (c == '"') {
-							context.KeywordBuilder.Remove (0,1);
+							context.KeywordBuilder.Remove (0, 1);
 							doc.PublicFpi = context.KeywordBuilder.ToString ();
 							context.KeywordBuilder.Length = 0;
 							context.StateTag = 0;
@@ -110,8 +110,7 @@ namespace MonoDevelop.Xml.Parser
 						return null;
 					}
 				}
-			}
-			else if (doc.Uri == null) {
+			} else if (doc.Uri == null) {
 				if (context.KeywordBuilder.Length == 0) {
 					if (XmlChar.IsWhitespace (c))
 						return null;
@@ -121,7 +120,7 @@ namespace MonoDevelop.Xml.Parser
 					}
 				} else {
 					if (c == '"') {
-						context.KeywordBuilder.Remove (0,1);
+						context.KeywordBuilder.Remove (0, 1);
 						doc.Uri = context.KeywordBuilder.ToString ();
 						context.KeywordBuilder.Length = 0;
 					} else {
@@ -129,10 +128,9 @@ namespace MonoDevelop.Xml.Parser
 					}
 					return null;
 				}
-			}
-			else if (doc.InternalDeclarationRegion.Length == 0) {
+			} else if (doc.InternalDeclarationRegion.Length == 0) {
 				if (XmlChar.IsWhitespace (c))
-						return null;
+					return null;
 				switch (context.StateTag) {
 				case 0:
 					if (c == '[') {
@@ -168,14 +166,13 @@ namespace MonoDevelop.Xml.Parser
 
 			if (isEndOfFile) {
 				context.Diagnostics?.Add (XmlCoreDiagnostics.IncompleteDocTypeEof, context.PositionBeforeCurrentChar, c);
-			}
-			else if (c != '>') {
+			} else if (c != '>') {
 				context.Diagnostics?.Add (XmlCoreDiagnostics.IncompleteDocType, context.PositionBeforeCurrentChar, c);
 			}
 
 			doc.End (context.PositionBeforeCurrentChar);
 			if (context.BuildTree) {
-				((XContainer) context.Nodes.Peek ()).AddChildNode (doc);
+				((XContainer)context.Nodes.Peek ()).AddChildNodeFromParser (doc);
 			}
 			return Parent;
 		}

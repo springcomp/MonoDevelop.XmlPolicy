@@ -284,7 +284,7 @@ namespace MonoDevelop.Xml.Parser
 
 			// make sure the leaf node is ended
 			if (path.Count > 0) {
-				var leaf = path[path.Count-1];
+				var leaf = path[path.Count - 1];
 				if (!(leaf is XDocument)) {
 					if (!AdvanceUntilEnded (parser, leaf, text, maximumReadahead - (parser.Position - startOffset), cancellationToken)) {
 						nodePath = null;
@@ -334,7 +334,7 @@ namespace MonoDevelop.Xml.Parser
 					valueSpan = attributeNode.ValueSpan!.Value;
 					value = attributeNode.Value ?? "";
 				} else {
-					value = cloneParser.GetContext().KeywordBuilder.ToString ();
+					value = cloneParser.GetContext ().KeywordBuilder.ToString ();
 					valueSpan = new TextSpan (cloneParser.Position - value.Length, value.Length);
 				}
 				return success;

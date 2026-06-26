@@ -44,12 +44,22 @@ namespace MonoDevelop.Xml.Dom
 			this.Name = name;
 		}
 
+		/// <summary>
+		/// Creates a new element with the given name and no source offset.
+		/// <see cref="XObject.Span"/> is set to <see cref="TextSpan.Invalid"/>.
+		/// </summary>
+		public XElement (XName name) : base (TextSpan.Invalid)
+		{
+			Name = name;
+			Attributes = new XAttributeCollection (this);
+		}
+
 		public XNode? ClosingTag { get; private set; }
 
-		[MemberNotNullWhen(true, nameof(ClosingTag))]
+		[MemberNotNullWhen (true, nameof (ClosingTag))]
 		public bool IsClosed { get { return ClosingTag != null; } }
 
-		[MemberNotNullWhen(true, nameof(ClosingTag))]
+		[MemberNotNullWhen (true, nameof (ClosingTag))]
 		public bool IsSelfClosing { get { return ClosingTag == this; } }
 
 		public void Close (XNode closingTag)
@@ -78,11 +88,29 @@ namespace MonoDevelop.Xml.Dom
 		protected override void ShallowCopyFrom (XObject copyFrom)
 		{
 			base.ShallowCopyFrom (copyFrom);
-			var copyFromEl = (XElement) copyFrom;
+			var copyFromEl = (XElement)copyFrom;
 			Name = copyFromEl.Name; //XName is immutable value type
-			//include attributes
+									//include attributes
 			foreach (var a in copyFromEl.Attributes)
-				Attributes.AddAttribute ((XAttribute) a.ShallowCopy ());
+				Attributes.AddAttributeFromParser ((XAttribute)a.ShallowCopy ());
+		}
+
+		internal override XNode CloneCore (bool deep)
+		{
+			var clone = (XElement)base.CloneCore (deep);
+
+			clone.Attributes.Clear ();
+			foreach (var attribute in Attributes)
+				clone.Attributes.AddAttributeFromParser (attribute.CloneCore ());
+
+			clone.HasEndBracket = HasEndBracket;
+			if (IsSelfClosing) {
+				clone.Close (clone);
+			} else if (ClosingTag is XClosingTag closingTag) {
+				clone.Close ((XClosingTag)closingTag.CloneCore (false));
+			}
+
+			return clone;
 		}
 
 		public override string ToString ()
@@ -143,7 +171,7 @@ namespace MonoDevelop.Xml.Dom
 
 		public int NameOffset => Span.Start + 1;
 
-		public TextSpan NameSpan => new TextSpan (Span.Start + 1, Name.Length);
+		public TextSpan NameSpan => Span.IsValid ? new TextSpan (Span.Start + 1, Name.Length) : TextSpan.Invalid;
 
 		public XElement? GetNextSiblingElement ()
 		{
@@ -194,12 +222,12 @@ namespace MonoDevelop.Xml.Dom
 		/// The span of the content between this tag and the closing tag. Null if there is no closing tag or it is self closing.
 		/// </summary>
 		public TextSpan? InnerSpan => (ClosingTag == null || IsSelfClosing)
-			? (TextSpan?) null
+			? (TextSpan?)null
 			: TextSpan.FromBounds (Span.End, ClosingTag.Span.Start);
 
 		/// <summary>
 		/// The span from the start of this element to the end of its closing tag.
 		/// </summary>
-		public override TextSpan OuterSpan => ClosingTag is null? Span : TextSpan.FromBounds (Span.Start, ClosingTag.Span.End);
+		public override TextSpan OuterSpan => ClosingTag is null ? Span : TextSpan.FromBounds (Span.Start, ClosingTag.Span.End);
 	}
 }

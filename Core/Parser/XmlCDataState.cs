@@ -38,7 +38,7 @@ namespace MonoDevelop.Xml.Parser
 		const int NOMATCH = 0;
 		const int SINGLE_BRACKET = 1;
 		const int DOUBLE_BRACKET = 2;
-		
+
 		public override XmlParserState? PushChar (char c, XmlParserContext context, ref bool replayCharacter, bool isEndOfFIle)
 		{
 			if (context.CurrentStateLength == 0) {
@@ -81,11 +81,10 @@ namespace MonoDevelop.Xml.Parser
 			XmlParserState? EndAndPop ()
 			{
 				var cdata = (XCData)context.Nodes.Pop ();
-				cdata.InnerText = context.KeywordBuilder.ToString ();
-				cdata.End (context.PositionAfterCurrentChar);
+				cdata.End (context.KeywordBuilder.ToString ());
 
 				if (context.BuildTree) {
-					((XContainer)context.Nodes.Peek ()).AddChildNode (cdata);
+					((XContainer)context.Nodes.Peek ()).AddChildNodeFromParser (cdata);
 				}
 				return Parent;
 			}

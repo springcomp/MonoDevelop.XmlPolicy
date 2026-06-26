@@ -92,7 +92,7 @@ namespace MonoDevelop.Xml.Parser
 					//close the start tag, if we found it
 					if (popCount > 0) {
 						// close it even if not in tree mode, as some spines may want to know whether an element was closed after advancing the parser
-						((XElement) context.Nodes.Pop ()).Close (ct);
+						((XElement)context.Nodes.Pop ()).Close (ct);
 					} else {
 						if (context.BuildTree) {
 							context.Diagnostics?.Add (XmlCoreDiagnostics.UnmatchedClosingTag, ct.Span, ct.Name.FullName);
@@ -101,7 +101,7 @@ namespace MonoDevelop.Xml.Parser
 								if (!parent.IsEnded) {
 									parent = context.Nodes.TryPeek<XContainer> (1);
 								}
-								parent?.AddChildNode (ct);
+								parent?.AddChildNodeFromParser (ct);
 							}
 						}
 					}
@@ -109,8 +109,7 @@ namespace MonoDevelop.Xml.Parser
 
 				if (isEndOfFile) {
 					context.Diagnostics?.Add (XmlCoreDiagnostics.IncompleteClosingTagEof, context.PositionBeforeCurrentChar);
-				}
-				else if (!ct.IsNamed) {
+				} else if (!ct.IsNamed) {
 					context.Diagnostics?.Add (XmlCoreDiagnostics.UnnamedClosingTag, ct.Span);
 				}
 

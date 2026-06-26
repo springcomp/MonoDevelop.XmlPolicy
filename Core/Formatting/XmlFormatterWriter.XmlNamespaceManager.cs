@@ -39,45 +39,47 @@ partial class XmlFormatterWriter
 	internal class XmlNamespaceManager : IXmlNamespaceResolver, IEnumerable
 	{
 		#region Data
-		struct NsDecl {
+		struct NsDecl
+		{
 			public string Prefix;
 			public string? Uri;
 		}
-		
-		struct NsScope {
+
+		struct NsScope
+		{
 			public int DeclCount;
 			public string? DefaultNamespace;
 		}
-		
-		NsDecl [] decls;
+
+		NsDecl[] decls;
 		int declPos = -1;
-		
-		NsScope [] scopes;
+
+		NsScope[] scopes;
 		int scopePos = -1;
-		
+
 		string? defaultNamespace;
 		int count;
-		
+
 		// precondition declPos == nsDecl.Length
 		void GrowDecls ()
 		{
-			NsDecl [] old = decls;
-			decls = new NsDecl [declPos * 2 + 1];
+			NsDecl[] old = decls;
+			decls = new NsDecl[declPos * 2 + 1];
 			if (declPos > 0)
 				Array.Copy (old, 0, decls, 0, declPos);
 		}
-		
+
 		// precondition scopePos == scopes.Length
 		void GrowScopes ()
 		{
-			NsScope [] old = scopes;
-			scopes = new NsScope [scopePos * 2 + 1];
+			NsScope[] old = scopes;
+			scopes = new NsScope[scopePos * 2 + 1];
 			if (scopePos > 0)
 				Array.Copy (old, 0, scopes, 0, scopePos);
 		}
-		
+
 		#endregion
-		
+
 		#region Fields
 
 		readonly XmlNameTable nameTable;
@@ -139,21 +141,21 @@ partial class XmlFormatterWriter
 
 			if (prefix.Length == 0)
 				defaultNamespace = uri;
-			
+
 			for (int i = declPos; i > declPos - count; i--) {
-				if (ReferenceEquals (decls [i].Prefix, prefix)) {
-					decls [i].Uri = uri;
+				if (ReferenceEquals (decls[i].Prefix, prefix)) {
+					decls[i].Uri = uri;
 					return;
 				}
 			}
-			
-			declPos ++;
-			count ++;
-			
+
+			declPos++;
+			count++;
+
 			if (declPos == decls.Length)
 				GrowDecls ();
-			decls [declPos].Prefix = prefix;
-			decls [declPos].Uri = uri;
+			decls[declPos].Prefix = prefix;
+			decls[declPos].Uri = uri;
 		}
 
 		static string? IsValidDeclaration (string prefix, string uri, bool throwException)
@@ -178,18 +180,18 @@ partial class XmlFormatterWriter
 		{
 			// In fact it returns such table's enumerator that contains all the namespaces.
 			// while HasNamespace() ignores pushed namespaces.
-			
+
 			Hashtable ht = new Hashtable ();
 			for (int i = 0; i <= declPos; i++) {
-				if (decls [i].Prefix != string.Empty && decls [i].Uri != null) {
-					ht [decls [i].Prefix] = decls [i].Uri;
+				if (decls[i].Prefix != string.Empty && decls[i].Uri != null) {
+					ht[decls[i].Prefix] = decls[i].Uri;
 				}
 			}
-			
-			ht [string.Empty] = DefaultNamespace;
-			ht [PrefixXml] = XmlnsXml;
-			ht [PrefixXmlns] = XmlnsXmlns;
-			
+
+			ht[string.Empty] = DefaultNamespace;
+			ht[PrefixXml] = XmlnsXml;
+			ht[PrefixXmlns] = XmlnsXmlns;
+
 			return ht.Keys.GetEnumerator ();
 		}
 
@@ -199,21 +201,19 @@ partial class XmlFormatterWriter
 
 			if (scope == XmlNamespaceScope.Local) {
 				for (int i = 0; i < count; i++)
-					if (decls [declPos - i].Prefix == string.Empty && decls [declPos - i].Uri == string.Empty) {
+					if (decls[declPos - i].Prefix == string.Empty && decls[declPos - i].Uri == string.Empty) {
 						if (table.ContainsKey (string.Empty))
 							table.Remove (string.Empty);
-					}
-					else if (decls [declPos - i].Uri is string uri)
-						table.Add (decls [declPos - i].Prefix, uri);
+					} else if (decls[declPos - i].Uri is string uri)
+						table.Add (decls[declPos - i].Prefix, uri);
 			} else {
 				for (int i = 0; i <= declPos; i++) {
-					if (decls [i].Prefix == string.Empty && decls [i].Uri == string.Empty) {
+					if (decls[i].Prefix == string.Empty && decls[i].Uri == string.Empty) {
 						// removal of default namespace
 						if (table.ContainsKey (string.Empty))
 							table.Remove (string.Empty);
-					}
-					else if (decls [i].Uri is string uri)
-						table [decls [i].Prefix] = uri;
+					} else if (decls[i].Uri is string uri)
+						table[decls[i].Prefix] = uri;
 				}
 
 				if (scope == XmlNamespaceScope.All)
@@ -231,10 +231,10 @@ partial class XmlFormatterWriter
 				return false;
 
 			for (int i = declPos; i > declPos - count; i--) {
-				if (decls [i].Prefix == prefix)
+				if (decls[i].Prefix == prefix)
 					return true;
 			}
-			
+
 			return false;
 		}
 
@@ -254,10 +254,10 @@ partial class XmlFormatterWriter
 			}
 
 			for (int i = declPos; i >= 0; i--) {
-				if (XmlNamespaceManager.CompareString (decls [i].Prefix, prefix, atomizedNames) && decls [i].Uri != null /* null == flag for removed */)
-					return decls [i].Uri;
+				if (XmlNamespaceManager.CompareString (decls[i].Prefix, prefix, atomizedNames) && decls[i].Uri != null /* null == flag for removed */)
+					return decls[i].Uri;
 			}
-			
+
 			return null;
 		}
 
@@ -279,14 +279,14 @@ partial class XmlFormatterWriter
 
 			if (XmlNamespaceManager.CompareString (uri, XmlnsXml, atomizedName))
 				return PrefixXml;
-			
+
 			if (XmlNamespaceManager.CompareString (uri, XmlnsXmlns, atomizedName))
 				return PrefixXmlns;
 
 			for (int i = declPos; i >= 0; i--) {
-				if (XmlNamespaceManager.CompareString (decls [i].Uri, uri, atomizedName) && decls [i].Prefix.Length > 0) // we already looked for ""
+				if (XmlNamespaceManager.CompareString (decls[i].Uri, uri, atomizedName) && decls[i].Prefix.Length > 0) // we already looked for ""
 					if (!excludeOverriden || !IsOverriden (i))
-						return decls [i].Prefix;
+						return decls[i].Prefix;
 			}
 
 			// ECMA specifies that this method returns String.Empty
@@ -301,9 +301,9 @@ partial class XmlFormatterWriter
 		{
 			if (idx == declPos)
 				return false;
-			string prefix = decls [idx + 1].Prefix;
+			string prefix = decls[idx + 1].Prefix;
 			for (int i = idx + 1; i <= declPos; i++)
-				if ((object) decls [idx].Prefix == (object) prefix)
+				if ((object)decls[idx].Prefix == (object)prefix)
 					return true;
 			return false;
 		}
@@ -314,20 +314,20 @@ partial class XmlFormatterWriter
 				return false;
 
 			declPos -= count;
-			defaultNamespace = scopes [scopePos].DefaultNamespace;
-			count = scopes [scopePos].DeclCount;
-			scopePos --;
+			defaultNamespace = scopes[scopePos].DefaultNamespace;
+			count = scopes[scopePos].DeclCount;
+			scopePos--;
 			return true;
 		}
 
 		public virtual void PushScope ()
 		{
-			scopePos ++;
+			scopePos++;
 			if (scopePos == scopes.Length)
 				GrowScopes ();
-			
-			scopes [scopePos].DefaultNamespace = defaultNamespace;
-			scopes [scopePos].DeclCount = count;
+
+			scopes[scopePos].DefaultNamespace = defaultNamespace;
+			scopes[scopePos].DeclCount = count;
 			count = 0;
 		}
 
@@ -344,13 +344,13 @@ partial class XmlFormatterWriter
 
 			if (uri == null)
 				throw new ArgumentNullException (nameof (uri));
-			
+
 			if (count == 0)
 				return;
 
 			for (int i = declPos; i > declPos - count; i--) {
-				if (XmlNamespaceManager.CompareString (decls [i].Prefix, prefix, atomizedNames) && XmlNamespaceManager.CompareString (decls [i].Uri, uri, atomizedNames))
-					decls [i].Uri = null;
+				if (XmlNamespaceManager.CompareString (decls[i].Prefix, prefix, atomizedNames) && XmlNamespaceManager.CompareString (decls[i].Uri, uri, atomizedNames))
+					decls[i].Uri = null;
 			}
 		}
 

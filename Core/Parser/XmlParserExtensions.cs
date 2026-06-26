@@ -10,11 +10,11 @@ namespace MonoDevelop.Xml.Parser
 {
 	public static class XmlParserExtensions
 	{
-		public static bool IsRootFree (this XmlSpineParser parser) => XmlRootState.IsFree(parser.GetContext ());
-		public static bool MaybeTag (this XmlSpineParser parser) => XmlRootState.MaybeTag(parser.GetContext ());
-		internal static bool MaybeCData (this XmlSpineParser parser) => XmlRootState.MaybeCData(parser.GetContext ());
-		internal static bool MaybeDocType (this XmlSpineParser parser) => XmlRootState.MaybeDocType(parser.GetContext ());
-		internal static bool MaybeComment (this XmlSpineParser parser) => XmlRootState.MaybeComment(parser.GetContext ());
+		public static bool IsRootFree (this XmlSpineParser parser) => XmlRootState.IsFree (parser.GetContext ());
+		public static bool MaybeTag (this XmlSpineParser parser) => XmlRootState.MaybeTag (parser.GetContext ());
+		internal static bool MaybeCData (this XmlSpineParser parser) => XmlRootState.MaybeCData (parser.GetContext ());
+		internal static bool MaybeDocType (this XmlSpineParser parser) => XmlRootState.MaybeDocType (parser.GetContext ());
+		internal static bool MaybeComment (this XmlSpineParser parser) => XmlRootState.MaybeComment (parser.GetContext ());
 		internal static bool MaybeCDataOrCommentOrDocType (this XmlSpineParser parser) => XmlRootState.IsNotFree (parser.GetContext ());
 		public static bool IsRootNotFree (this XmlSpineParser parser) => XmlRootState.IsNotFree (parser.GetContext ());
 
@@ -31,7 +31,7 @@ namespace MonoDevelop.Xml.Parser
 
 		public static bool IsInText (this XmlSpineParser parser) => parser.GetContext ().CurrentState is XmlTextState;
 
-		public static List<XObject> GetPath (this XmlParser parser) => parser.GetContext().Nodes.ToPath ();
+		public static List<XObject> GetPath (this XmlParser parser) => parser.GetContext ().Nodes.ToPath ();
 
 		public static List<XObject> GetPath (this XObject obj)
 		{
@@ -60,7 +60,7 @@ namespace MonoDevelop.Xml.Parser
 					var node = nodePath[i];
 					if (node.Parent == null) {
 						if (parent is XContainer c && node is XNode n) {
-							c.AddChildNode (n);
+							c.AddChildNodeFromParser (n);
 						} else {
 							node.Parent = parent;
 						}

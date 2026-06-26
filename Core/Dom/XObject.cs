@@ -53,10 +53,20 @@ namespace MonoDevelop.Xml.Dom
 		}
 
 		public TextSpan Span { get; protected set; }
+		/// <summary>
+		/// Whether this object has a valid source span.
+		/// </summary>
+		public bool HasValidSpan => Span.IsValid;
 
 		public virtual TextSpan OuterSpan => Span;
 
 		public void End (int offset) => Span = TextSpan.FromBounds (Span.Start, offset);
+
+		/// <summary>Marks this object's <see cref="Span"/> as <see cref="TextSpan.Invalid"/>.</summary>
+		internal void InvalidateSpan () => Span = TextSpan.Invalid;
+
+		/// <summary>Sets this object's <see cref="Span"/> to an arbitrary value. Used by span recalculation.</summary>
+		internal void SetSpan (TextSpan span) => Span = span;
 
 		/// <summary>
 		/// Whether this node is fully parsed i.e. has an end position.
@@ -92,7 +102,7 @@ namespace MonoDevelop.Xml.Dom
 			Span = copyFrom.Span;
 		}
 
-		protected XObject () {}
+		protected XObject () { }
 
 		public virtual string FriendlyPathRepresentation => GetType ().ToString ();
 	}

@@ -30,10 +30,10 @@ namespace MonoDevelop.Xml.Dom
 {
 	public class XDocType : XNode, INamedXObject
 	{
-		public XDocType (int startOffset) : base (startOffset) {}
-		public XDocType (TextSpan span) : base (span) {}
+		public XDocType (int startOffset) : base (startOffset) { }
+		public XDocType (TextSpan span) : base (span) { }
 
-		protected XDocType () {}
+		protected XDocType () { }
 		protected override XObject NewInstance () { return new XDocType (); }
 
 		public XName RootElement { get; set; }
@@ -49,7 +49,7 @@ namespace MonoDevelop.Xml.Dom
 		protected override void ShallowCopyFrom (XObject copyFrom)
 		{
 			base.ShallowCopyFrom (copyFrom);
-			var copyFromDT = (XDocType) copyFrom;
+			var copyFromDT = (XDocType)copyFrom;
 			//immutable types
 			RootElement = copyFromDT.RootElement;
 			PublicFpi = copyFromDT.PublicFpi;
@@ -64,7 +64,7 @@ namespace MonoDevelop.Xml.Dom
 
 		bool INamedXObject.IsNamed => RootElement.IsValid;
 
-		TextSpan INamedXObject.NameSpan => new (Span.Start + 10, RootElement.Length);
+		TextSpan INamedXObject.NameSpan => Span.IsValid ? new (Span.Start + 10, RootElement.Length) : TextSpan.Invalid;
 
 		public override string ToString ()
 			=> $"[DocType: RootElement='{RootElement.FullName}', PublicFpi='{PublicFpi}',  InternalDeclarationRegion='{InternalDeclarationRegion}', Uri='{Uri}']";

@@ -36,7 +36,7 @@ namespace MonoDevelop.Xml.Formatting
 			var doc = new XmlDocument ();
 			doc.XmlResolver = null; // Prevent DTDs from being downloaded.
 			doc.LoadXml (input);
-			
+
 			var sw = new StringWriter ();
 			var xmlWriter = new XmlFormatterWriter (sw);
 			xmlWriter.WriteNode (doc, formattingPolicy, textPolicy);
